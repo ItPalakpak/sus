@@ -53,6 +53,32 @@ exports.handler = async (event) => {
         body: JSON.stringify(formatted)
       };
     } 
+
+    if (event.httpMethod === 'POST') {
+      let body;
+      try {
+        body = JSON.parse(event.body);
+      } catch {
+        return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON body' }) };
+      }
+      
+      const { active_session } = body;
+      if (!active_session) {
+        return { statusCode: 400, body: JSON.stringify({ error: 'Missing active_session parameter' }) };
+      }
+
+      await client.query(`
+        INSERT INTO sus_settings (key, value)
+        VALUES ('active_session', $1)
+        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+      `, [active_session.trim()]);
+
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ success: true, active_session })
+      };
+    }
     
     if (event.httpMethod === 'DELETE') {
       const id = event.queryStringParameters?.id;

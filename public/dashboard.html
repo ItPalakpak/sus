@@ -46,6 +46,15 @@
     </div>
   </div>
 
+  <!-- SESSION CONFIGURATION -->
+  <div class="session-config-bar">
+    <div class="config-inner">
+      <label for="active-session-input">Active Survey Session:</label>
+      <input type="text" id="active-session-input" placeholder="e.g. Session 1 — May 20">
+      <button class="btn-primary btn-save-session" onclick="saveActiveSession()">Update Active Session</button>
+    </div>
+  </div>
+
   <div class="session-filter">
     <label>Filter by session:</label>
     <select id="sess-filter" onchange="renderDash()">

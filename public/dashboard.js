@@ -60,6 +60,7 @@ async function verifyPasscode() {
     
     responses = await res.json();
     renderDash();
+    fetchActiveSession();
     showToast('Dashboard unlocked!');
 
   } catch (err) {
@@ -263,3 +264,56 @@ document.addEventListener('DOMContentLoaded', () => {
     verifyPasscode();
   }
 });
+
+async function fetchActiveSession() {
+  try {
+    const res = await fetch('/.netlify/functions/submit-sus');
+    if (res.ok) {
+      const data = await res.json();
+      const input = document.getElementById('active-session-input');
+      if (input && data.active_session) {
+        input.value = data.active_session;
+      }
+    }
+  } catch (err) {
+    console.error('Failed to fetch active session:', err);
+  }
+}
+
+async function saveActiveSession() {
+  const input = document.getElementById('active-session-input');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) {
+    showToast('Please enter a session name.');
+    return;
+  }
+
+  const btn = document.querySelector('.btn-save-session');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+  }
+
+  try {
+    const res = await fetch('/.netlify/functions/admin-sus', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': passcode
+      },
+      body: JSON.stringify({ active_session: val })
+    });
+
+    if (!res.ok) throw new Error('Failed to update active session');
+
+    showToast('Active session updated!');
+  } catch (err) {
+    showToast('Error updating active session.');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Update Active Session';
+    }
+  }
+}

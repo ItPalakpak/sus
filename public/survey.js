@@ -50,6 +50,23 @@ document.addEventListener('DOMContentLoaded', () => {
   if (dateEl) {
     dateEl.valueAsDate = new Date();
   }
+
+  // Fetch active session from backend settings
+  const sessionEl = document.getElementById('session-name');
+  if (sessionEl) {
+    fetch('/.netlify/functions/submit-sus')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.active_session) {
+          sessionEl.value = data.active_session;
+        } else {
+          sessionEl.value = 'Session 1';
+        }
+      })
+      .catch(() => {
+        sessionEl.value = 'Session 1';
+      });
+  }
 });
 
 function updateScore(){

@@ -5,7 +5,37 @@ const { Client } = require('pg');
 const crypto = require('crypto');
 
 exports.handler = async (event) => {
-  // Only allow POST requests
+  // Support GET request to fetch active session configuration
+  if (event.httpMethod === 'GET') {
+    const client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false }
+    });
+    try {
+      await client.connect();
+      const res = await client.query("SELECT value FROM sus_settings WHERE key = 'active_session'");
+      const activeSession = res.rows.length ? res.rows[0].value : 'Session 1';
+      return {
+        statusCode: 200,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ active_session: activeSession })
+      };
+    } catch (err) {
+      console.warn('Settings table not queryable, using fallback:', err.message);
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active_session: 'Session 1' })
+      };
+    } finally {
+      await client.end();
+    }
+  }
+
+  // Only allow POST requests for submissions
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
