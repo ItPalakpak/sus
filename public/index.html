@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EZQueue — System Usability Scale</title>
+<link rel="icon" type="image/png" href="ic_launcher.png" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:    #050505;
+  --ink:      #111111;
+  --deep:     #1a1a1a;
+  --carbon:   #232323;
+  --muted:    #555555;
+  --dim:      #888888;
+  --border:   #2a2a2a;
+  --border2:  #333333;
+  --surface:  #161616;
+  --surface2: #1e1e1e;
+  --surface3: #242424;
+
+  /* vibrant accent palette */
+  --cyan:     #00e5ff;
+  --lime:     #b2ff59;
+  --amber:    #ffab40;
+  --rose:     #ff4d6d;
+  --violet:   #c77dff;
+  --white:    #f8f8f8;
+
+  --r: 10px;
+  --rl: 14px;
+
+  /* alias for reusable component */
+  --color-text-primary: var(--white);
+  --color-text-secondary: #aaaaaa;
+  --color-text-tertiary: #666666;
+  --color-background-primary: var(--surface);
+  --color-background-secondary: var(--surface2);
+  --color-background-tertiary: var(--black);
+  --color-border-tertiary: var(--border);
+  --color-border-secondary: var(--border2);
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--black);
+  color: var(--white);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── NOISE TEXTURE ─── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ─── TOP BAR ─── */
+.topbar {
+  background: var(--ink);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 16px;
+}
+
+.topbar-left { display: flex; align-items: center; gap: 14px; }
+
+.logo-sq {
+  width: 34px; height: 34px;
+  background: var(--cyan);
+  color: var(--black);
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: -.3px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.brand { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: -.3px; }
+.brand-sub { font-size: 10px; color: var(--dim); margin-top: 1px; font-family: 'Space Mono', monospace; letter-spacing: .3px; }
+
+/* ─── VIEWS ─── */
+.view { flex: 1; padding: 24px 20px; max-width: 860px; margin: 0 auto; width: 100%; }
+
+/* ─── SESSION BAR ─── */
+.session-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  padding: 14px 20px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.session-bar label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  font-family: 'Space Mono', monospace;
+}
+.session-bar input,
+.session-bar select {
+  padding: 7px 12px;
+  border: 1px solid var(--border2);
+  border-radius: 7px;
+  font-size: 13px;
+  background: var(--surface2);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color .15s;
+}
+.session-bar input:focus,
+.session-bar select:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0,229,255,.08); }
+.session-bar .spacer { flex: 1; }
+
+/* ─── FORM CARD ─── */
+.form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  overflow: hidden;
+  margin-bottom: 14px;
+  transition: border-color .2s;
+}
+.form-card:hover { border-color: var(--border2); }
+
+.form-card-head {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface2);
+}
+.part-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--black);
+  background: var(--cyan);
+  border-radius: 5px;
+  padding: 3px 9px;
+  white-space: nowrap;
+  font-family: 'Space Mono', monospace;
+}
+.part-tag.amber { background: var(--amber); }
+.part-tag.lime { background: var(--lime); }
+.part-tag.violet { background: var(--violet); }
+.part-tag.dim-tag { background: var(--surface3); color: var(--dim); border: 1px solid var(--border2); }
+
+.form-card-head h3 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--white); }
+.form-card-body { padding: 20px; }
+
+/* ─── INFO GRID ─── */
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-bottom: 7px;
+  font-family: 'Space Mono', monospace;
+}
+.field input, .field select {
+  width: 100%;
+  padding: 9px 14px;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--surface2);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  transition: all .15s;
+}
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(0,229,255,.08);
+}
+.field input::placeholder { color: var(--muted); }
+
+/* ─── SCALE LEGEND ─── */
+.scale-legend {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 14px 0;
+}
+.sc {
+  flex: 1;
+  text-align: center;
+  padding: 10px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.3;
+  border-right: 1px solid var(--border);
+  font-family: 'Space Mono', monospace;
+  color: var(--dim);
+}
+.sc:last-child { border-right: none; }
+.sc .n { font-size: 20px; font-weight: 700; display: block; margin-bottom: 3px; font-family: 'Syne', sans-serif; }
+.sc.s1 { background: var(--cyan); color: var(--black); }
+.sc.s1 .n { color: var(--black); }
+
+/* ─── SUS ITEMS ─── */
+.sus-item {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: border-color .2s, box-shadow .2s;
+}
+.sus-item:hover { border-color: var(--border2); }
+.sus-item.answered { border-color: var(--cyan); box-shadow: 0 0 0 1px rgba(0,229,255,.15); }
+
+.item-num {
+  width: 40px; min-width: 40px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+  color: var(--dim);
+  background: var(--surface2);
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+  font-family: 'Space Mono', monospace;
+}
+.sus-item.answered .item-num { color: var(--cyan); }
+
+.item-text {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.rtag {
+  font-size: 9px;
+  color: var(--amber);
+  border: 1px solid rgba(255,171,64,.3);
+  background: rgba(255,171,64,.08);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: 'Space Mono', monospace;
+  flex-shrink: 0;
+}
+
+.radios {
+  display: flex;
+  gap: 5px;
+  padding: 10px 14px;
+  align-items: center;
+  background: var(--surface2);
+  border-left: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.rb { cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.rb input { display: none; }
+.rbc {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  color: var(--muted);
+  background: var(--surface3);
+  transition: all .15s;
+  user-select: none;
+  font-family: 'Space Mono', monospace;
+}
+.rb:hover .rbc { border-color: var(--cyan); color: var(--cyan); background: rgba(0,229,255,.06); }
+.rb input:checked + .rbc { background: var(--cyan); border-color: var(--cyan); color: var(--black); }
+.rb-l { font-size: 8px; color: var(--dim); text-align: center; line-height: 1.2; max-width: 32px; font-family: 'Space Mono', monospace; }
+
+/* ─── PROGRESS ─── */
+.prog-bar {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 7px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 11px;
+  color: var(--dim);
+  font-family: 'Space Mono', monospace;
+}
+.prog-track { flex: 1; height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.prog-fill { height: 100%; background: var(--cyan); border-radius: 99px; transition: width .3s ease; }
+
+/* ─── SCORE PANEL ─── */
+.score-panel {
+  display: none;
+  background: linear-gradient(135deg, var(--ink) 0%, var(--deep) 100%);
+  border: 1px solid var(--cyan);
+  box-shadow: 0 0 40px rgba(0,229,255,.12), inset 0 1px 0 rgba(0,229,255,.1);
+  border-radius: var(--rl);
+  padding: 22px 26px;
+  margin: 14px 0;
+  gap: 22px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.score-big { font-size: 56px; font-weight: 800; line-height: 1; font-family: 'Syne', sans-serif; color: var(--cyan); }
+.score-lbl { font-size: 10px; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; font-family: 'Space Mono', monospace; margin-top: 3px; }
+.score-detail { flex: 1; }
+.score-grade { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+.score-desc { font-size: 12px; color: var(--dim); line-height: 1.5; }
+.score-track2 { height: 3px; background: var(--border2); border-radius: 99px; margin-top: 12px; overflow: hidden; }
+.score-fill2 { height: 100%; background: var(--cyan); border-radius: 99px; transition: width .5s ease; }
+
+/* ─── FEEDBACK ─── */
+.fb-field { margin-bottom: 16px; }
+.fb-field label {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12px; font-weight: 600; color: var(--dim);
+  margin-bottom: 8px;
+}
+.qn {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--black);
+  font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-family: 'Space Mono', monospace;
+}
+.fb-field textarea {
+  width: 100%;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--white);
+  background: var(--surface2);
+  resize: vertical;
+  min-height: 72px;
+  line-height: 1.6;
+  transition: all .15s;
+}
+.fb-field textarea:focus {
+  outline: none;
+  border-color: var(--lime);
+  box-shadow: 0 0 0 3px rgba(178,255,89,.07);
+}
+.fb-field textarea::placeholder { color: var(--muted); }
+
+/* ─── SATISFACTION ─── */
+.sat-row { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; margin: 16px 0 10px; }
+.sb { cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+.sb input { display: none; }
+.sbc {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700;
+  font-family: 'Syne', sans-serif;
+  color: var(--muted);
+  background: var(--surface2);
+  transition: all .15s;
+}
+.sb:hover .sbc { border-color: var(--violet); color: var(--violet); background: rgba(199,125,255,.07); }
+.sb input:checked + .sbc { background: var(--violet); border-color: var(--violet); color: var(--black); }
+.sat-leg { display: flex; justify-content: center; gap: 18px; font-size: 10px; color: var(--dim); margin-top: 6px; font-family: 'Space Mono', monospace; }
+
+/* ─── SUBMIT ─── */
+.submit-row { display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+.btn-primary {
+  padding: 11px 32px;
+  background: var(--cyan);
+  color: var(--black);
+  border: none;
+  border-radius: 8px;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: -.2px;
+}
+.btn-primary:hover { background: #33eaff; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,229,255,.25); }
+.btn-primary:active { transform: translateY(0); }
+.btn-ghost {
+  padding: 11px 20px;
+  background: transparent;
+  color: var(--dim);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn-ghost:hover { background: var(--surface2); color: var(--white); }
+.submit-note { font-size: 11px; color: var(--dim); text-align: center; margin-top: 10px; line-height: 1.5; font-family: 'Space Mono', monospace; }
+
+/* ─── THANK YOU ─── */
+#thank-you {
+  display: none;
+  text-align: center;
+  padding: 60px 20px;
+}
+.ty-icon {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: rgba(178,255,89,.1);
+  border: 1px solid rgba(178,255,89,.3);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 28px;
+}
+.ty-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; color: var(--white); margin-bottom: 10px; }
+.ty-sub { font-size: 13px; color: var(--dim); margin-bottom: 28px; line-height: 1.7; max-width: 380px; margin-left: auto; margin-right: auto; }
+
+.error-msg {
+  display: none;
+  background: rgba(255, 77, 109, 0.1);
+  border: 1px solid rgba(255, 77, 109, 0.3);
+  color: var(--rose);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-top: 14px;
+  text-align: center;
+  line-height: 1.5;
+}
+.error-msg.show { display: block; }
+
+/* ─── NOTE BOX ─── */
+.note-box {
+  background: var(--surface3);
+  border-left: 3px solid var(--amber);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.7;
+  margin-top: 12px;
+}
+
+/* ─── TOAST ─── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--lime);
+  color: var(--black);
+  padding: 11px 24px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Syne', sans-serif;
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  z-index: 999;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ─── HERO SECTION ─── */
+.hero {
+  background: linear-gradient(135deg, var(--ink) 0%, #0d1a1a 50%, var(--deep) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  padding: 36px 40px 32px;
+  margin-bottom: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -80px; right: -80px;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,229,255,.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -60px; left: -40px;
+  width: 240px; height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(178,255,89,.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-eyebrow {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 20px; height: 1px;
+  background: var(--cyan);
+}
+.hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 14px;
+  letter-spacing: -.5px;
+}
+.hero h1 span { color: var(--cyan); }
+.hero p {
+  font-size: 14px;
+  color: var(--dim);
+  line-height: 1.7;
+  max-width: 500px;
+  margin-bottom: 22px;
+}
+.hero-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border2);
+  color: var(--dim);
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-family: 'Space Mono', monospace;
+}
+.chip.c-cyan { border-color: rgba(0,229,255,.3); color: var(--cyan); background: rgba(0,229,255,.06); }
+.chip.c-lime { border-color: rgba(178,255,89,.3); color: var(--lime); background: rgba(178,255,89,.06); }
+
+@media (max-width: 600px) {
+  .topbar { padding: 0 16px; }
+  .view { padding: 16px 12px; }
+  .hero { padding: 24px 20px 20px; }
+  .hero h1 { font-size: 26px; }
+  .info-grid { grid-template-columns: 1fr; }
+  .radios { padding: 8px 10px; gap: 4px; }
+  .rbc { width: 28px; height: 28px; font-size: 11px; }
+  .sbc { width: 38px; height: 38px; font-size: 13px; }
+  .session-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-sq">EZ</div>
+    <div>
+      <div class="brand">EZQueue SUS</div>
+      <div class="brand-sub">USABILITY EVALUATION</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ FORM VIEW ═══════════════════ -->
+<div class="view active" id="view-form">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">EZQueue · System Usability Scale</div>
+    <h1>How was your<br><span>experience?</span></h1>
+    <p>Rate your experience with the EZQueue system during today's demonstration. Your feedback shapes the next version.</p>
+    <div class="hero-chips">
+      <span class="chip c-cyan">10-item SUS</span>
+      <span class="chip c-lime">Auto-scored</span>
+      <span class="chip">Anonymous OK</span>
+      <span class="chip">~3 minutes</span>
+    </div>
+  </div>
+
+  <!-- SESSION BAR -->
+  <div class="session-bar">
+    <label>Session</label>
+    <input type="text" id="session-name" placeholder="e.g. Session 1 — May 20" style="width:200px">
+    <label>Date</label>
+    <input type="date" id="session-date" style="width:145px">
+    <div class="spacer"></div>
+  </div>
+
+  <!-- THANK YOU STATE -->
+  <div id="thank-you">
+    <div class="ty-icon">✓</div>
+    <div class="ty-title">Response recorded</div>
+    <div class="ty-sub">Thank you for your time. Your feedback has been saved and will be used to improve EZQueue before the next release.</div>
+    <button class="btn-primary" onclick="resetForm()">Start next respondent →</button>
+  </div>
+
+  <!-- FORM BODY -->
+  <div id="form-body">
+
+    <!-- RESPONDENT INFO -->
+    <div class="form-card">
+      <div class="form-card-head">
+        <span class="part-tag">Info</span>
+        <h3>Respondent information</h3>
+      </div>
+      <div class="form-card-body">
+        <div class="info-grid">
+          <div class="field"><label>Name (optional)</label><input type="text" id="r-name" placeholder="e.g. Juan dela Cruz"></div>
+          <div class="field"><label>Role / department</label><input type="text" id="r-role" placeholder="e.g. Registrar Staff"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSTRUCTIONS -->
+    <div class="form-card">
+      <div class="form-card-head">
+        <span class="part-tag dim-tag">Instructions</span>
+        <h3>How to answer</h3>
+      </div>
+      <div class="form-card-body">
+        <p style="font-size:13px;color:var(--dim);line-height:1.7;margin-bottom:12px">Rate each statement based on your experience with EZQueue during today's demonstration. Select one number per item.</p>
+        <div class="scale-legend">
+          <div class="sc s1"><span class="n">1</span>Strongly<br>Disagree</div>
+          <div class="sc s2"><span class="n">2</span>Disagree</div>
+          <div class="sc s3"><span class="n">3</span>Neutral</div>
+          <div class="sc s4"><span class="n">4</span>Agree</div>
+          <div class="sc s5"><span class="n">5</span>Strongly<br>Agree</div>
+        </div>
+        <div class="note-box"><strong style="color:var(--amber)">Note:</strong> There are no right or wrong answers. All responses are confidential and used solely for system improvement. Items tagged <code style="font-size:10px;background:rgba(255,171,64,.1);color:var(--amber);padding:1px 5px;border-radius:3px;border:1px solid rgba(255,171,64,.3)">R</code> are reverse-scored during analysis — respond naturally.</div>
+      </div>
+    </div>
+
+    <!-- SUS ITEMS -->
+    <div class="form-card">
+      <div class="form-card-head">
+        <span class="part-tag">Part 1</span>
+        <h3>System usability scale — 10 items</h3>
+      </div>
+      <div class="form-card-body">
+        <div class="prog-bar">
+          <span id="prog-text">0 of 10 answered</span>
+          <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+          <span id="prog-pct" style="font-family:'Space Mono',monospace;font-size:11px">0%</span>
+        </div>
+        <div id="sus-items"></div>
+        <div class="score-panel" id="score-panel">
+          <div>
+            <div class="score-big" id="score-big">—</div>
+            <div class="score-lbl">SUS Score</div>
+          </div>
+          <div class="score-detail">
+            <div class="score-grade" id="score-grade"></div>
+            <div class="score-desc" id="score-desc"></div>
+            <div class="score-track2"><div class="score-fill2" id="score-fill2" style="width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPEN-ENDED FEEDBACK -->
+    <div class="form-card">
+      <div class="form-card-head">
+        <span class="part-tag amber">Part 2</span>
+        <h3>Open-ended feedback</h3>
+      </div>
+      <div class="form-card-body">
+        <div class="fb-field">
+          <label><span class="qn">1</span>What did you like most about EZQueue?</label>
+          <textarea id="fb1" placeholder="e.g. The queue display was clear and easy to read..." rows="2"></textarea>
+        </div>
+        <div class="fb-field">
+          <label><span class="qn">2</span>What did you find most challenging or confusing?</label>
+          <textarea id="fb2" placeholder="e.g. I was unsure how to cancel a ticket..." rows="2"></textarea>
+        </div>
+        <div class="fb-field">
+          <label><span class="qn">3</span>What features or improvements would you suggest?</label>
+          <textarea id="fb3" placeholder="e.g. SMS notifications when my turn is near..." rows="2"></textarea>
+        </div>
+        <div class="fb-field">
+          <label><span class="qn">4</span>Any other comments?</label>
+          <textarea id="fb4" placeholder="Anything else..." rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- SATISFACTION -->
+    <div class="form-card">
+      <div class="form-card-head">
+        <span class="part-tag violet">Part 3</span>
+        <h3>Overall satisfaction (1–10)</h3>
+      </div>
+      <div class="form-card-body">
+        <p style="font-size:13px;color:var(--dim);line-height:1.6;margin-bottom:4px">How satisfied are you overall with EZQueue after today's demonstration?</p>
+        <div class="sat-row" id="sat-row"></div>
+        <div class="sat-leg"><span>1–4 · Not satisfied</span><span>5–7 · Moderate</span><span>8–10 · Very satisfied</span></div>
+      </div>
+    </div>
+
+    <div class="error-msg" id="err-submit">⚠ Something went wrong while submitting. Please try again.</div>
+
+    <div class="submit-row">
+      <button class="btn-ghost" onclick="resetForm()">Clear form</button>
+      <button class="btn-primary" id="submit-btn" onclick="submitForm()">Submit Response →</button>
+    </div>
+    <p class="submit-note">Responses are submitted securely. Limit of 5 submissions per device.</p>
+  </div>
+</div>
+
+</div><!-- /app -->
+<div class="toast" id="toast"></div>
+
+<script>
+const SUS_ITEMS = [
+  { num:1,  text:"I think that I would like to use this system frequently.",                                               rev:false },
+  { num:2,  text:"I found the system unnecessarily complex.",                                                              rev:true  },
+  { num:3,  text:"I thought the system was easy to use.",                                                                  rev:false },
+  { num:4,  text:"I think that I would need the support of a technical person to be able to use this system.",             rev:true  },
+  { num:5,  text:"I found the various functions in this system were well integrated.",                                      rev:false },
+  { num:6,  text:"I thought there was too much inconsistency in this system.",                                             rev:true  },
+  { num:7,  text:"I would imagine that most people would learn to use this system very quickly.",                           rev:false },
+  { num:8,  text:"I found the system very cumbersome to use.",                                                             rev:true  },
+  { num:9,  text:"I felt very confident using the system.",                                                                rev:false },
+  { num:10, text:"I needed to learn a lot of things before I could get going with this system.",                           rev:true  },
+];
+const RLBLS = ["SD","D","N","A","SA"];
+
+// Build SUS items
+const susEl = document.getElementById('sus-items');
+SUS_ITEMS.forEach((item, idx) => {
+  const d = document.createElement('div');
+  d.className = 'sus-item';
+  d.id = 'si-' + item.num;
+  d.innerHTML = `
+    <div class="item-num">${item.num}</div>
+    <div class="item-text">${item.text}${item.rev ? '<span class="rtag">R</span>' : ''}</div>
+    <div class="radios">
+      ${[1,2,3,4,5].map(v => `
+        <label class="rb" title="${['Strongly disagree','Disagree','Neutral','Agree','Strongly agree'][v-1]}">
+          <input type="radio" name="sus${item.num}" value="${v}" onchange="updateScore()">
+          <div class="rbc">${v}</div>
+          ${idx === 0 ? `<div class="rb-l">${RLBLS[v-1]}</div>` : ''}
+        </label>`).join('')}
+    </div>`;
+  susEl.appendChild(d);
+});
+
+// Build satisfaction
+const satEl = document.getElementById('sat-row');
+for(let i = 1; i <= 10; i++){
+  const lb = document.createElement('label');
+  lb.className = 'sb';
+  lb.innerHTML = `<input type="radio" name="sat" value="${i}"><div class="sbc">${i}</div>`;
+  satEl.appendChild(lb);
+}
+
+document.getElementById('session-date').valueAsDate = new Date();
+
+function updateScore(){
+  let answered = 0, total = 0;
+  SUS_ITEMS.forEach(item => {
+    const sel = document.querySelector(`input[name="sus${item.num}"]:checked`);
+    if(sel){
+      answered++;
+      const v = parseInt(sel.value);
+      total += item.rev ? (5 - v) : (v - 1);
+      document.getElementById('si-' + item.num).classList.add('answered');
+    } else {
+      document.getElementById('si-' + item.num).classList.remove('answered');
+    }
+  });
+  const pct = Math.round(answered / 10 * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = `${answered} of 10 answered`;
+  document.getElementById('prog-pct').textContent = pct + '%';
+
+  if(answered < 10){ document.getElementById('score-panel').style.display = 'none'; return; }
+  const score = total * 2.5;
+  document.getElementById('score-panel').style.display = 'flex';
+  document.getElementById('score-big').textContent = score.toFixed(1);
+  document.getElementById('score-fill2').style.width = score + '%';
+  let g, d;
+  if(score >= 90)      { g = 'Best Imaginable (A+)'; d = 'Outstanding — users find the system exemplary.'; }
+  else if(score >= 85) { g = 'Excellent (A)';         d = 'Excellent usability — performs very well.'; }
+  else if(score >= 80) { g = 'Good (B)';              d = 'Good usability — above industry average.'; }
+  else if(score >= 70) { g = 'Okay (C)';              d = 'Acceptable — some improvements recommended.'; }
+  else if(score >= 68) { g = 'Above Average';          d = 'Just above the 68-point benchmark threshold.'; }
+  else if(score >= 60) { g = 'Below Average (D)';     d = 'Usability concerns — improvements needed before deployment.'; }
+  else                 { g = 'Poor / Unacceptable (F)'; d = 'Significant issues — core design needs rethinking.'; }
+  document.getElementById('score-grade').textContent = g;
+  document.getElementById('score-desc').textContent = d;
+}
+
+function computeSUS(susVals){
+  let total = 0;
+  SUS_ITEMS.forEach((item, i) => {
+    const v = susVals[i];
+    total += item.rev ? (5 - v) : (v - 1);
+  });
+  return parseFloat((total * 2.5).toFixed(1));
+}
+
+async function submitForm(){
+  const btn = document.getElementById('submit-btn');
+  const err = document.getElementById('err-submit');
+  err.classList.remove('show');
+
+  const susVals = SUS_ITEMS.map(item => {
+    const sel = document.querySelector(`input[name="sus${item.num}"]:checked`);
+    return sel ? parseInt(sel.value) : null;
+  });
+  if(susVals.some(v => v === null)){ showToast('Please answer all 10 SUS items.'); return; }
+  
+  // Client-side rate limit check: max 5 per device
+  const subCount = parseInt(localStorage.getItem('sus_survey_submissions') || '0');
+  if (subCount >= 5) {
+    err.textContent = '⚠ You have already submitted the maximum number of responses (5) from this device.';
+    err.classList.add('show');
+    btn.disabled = true;
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  const score = computeSUS(susVals);
+  const sat = document.querySelector('input[name="sat"]:checked');
+  const session = document.getElementById('session-name').value || 'Session 1';
+  const date = document.getElementById('session-date').value || new Date().toISOString().slice(0,10);
+  
+  const payload = {
+    session, date,
+    name: document.getElementById('r-name').value.trim() || 'Anonymous',
+    role: document.getElementById('r-role').value.trim() || '—',
+    sus: susVals, 
+    score,
+    sat: sat ? parseInt(sat.value) : null,
+    fb: [
+      document.getElementById('fb1').value.trim(),
+      document.getElementById('fb2').value.trim(),
+      document.getElementById('fb3').value.trim(),
+      document.getElementById('fb4').value.trim()
+    ]
+  };
+
+  try {
+    const res = await fetch('/.netlify/functions/submit-sus', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify(payload)
+    });
+    
+    if (!res.ok) {
+      if (res.status === 429) {
+        const errorData = await res.json();
+        err.textContent = `⚠ ${errorData.detail || 'Limit reached or survey closed.'}`;
+        err.classList.add('show');
+        btn.disabled = true;
+        btn.textContent = 'Closed';
+        return;
+      }
+      throw new Error('Database insertion failed');
+    }
+
+    // Track submission count in localStorage
+    localStorage.setItem('sus_survey_submissions', subCount + 1);
+
+    document.getElementById('form-body').style.display = 'none';
+    document.getElementById('thank-you').style.display = 'block';
+    showToast('Response saved!');
+  } catch (e) {
+    err.textContent = '⚠ An error occurred while saving your response. Please try again.';
+    err.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Submit Response →';
+  }
+}
+
+function resetForm(){
+  document.getElementById('form-body').style.display = 'block';
+  document.getElementById('thank-you').style.display = 'none';
+  document.getElementById('r-name').value = '';
+  document.getElementById('r-role').value = '';
+  SUS_ITEMS.forEach(item => {
+    document.querySelectorAll(`input[name="sus${item.num}"]`).forEach(r => r.checked = false);
+    document.getElementById('si-' + item.num).classList.remove('answered');
+  });
+  document.querySelectorAll('input[name="sat"]').forEach(r => r.checked = false);
+  ['fb1','fb2','fb3','fb4'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('score-panel').style.display = 'none';
+  document.getElementById('prog-fill').style.width = '0%';
+  document.getElementById('prog-text').textContent = '0 of 10 answered';
+  document.getElementById('prog-pct').textContent = '0%';
+  
+  // Re-enable submit button if below limit
+  const subCount = parseInt(localStorage.getItem('sus_survey_submissions') || '0');
+  const btn = document.getElementById('submit-btn');
+  if (subCount < 5) {
+    btn.disabled = false;
+    btn.textContent = 'Submit Response →';
+  }
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>

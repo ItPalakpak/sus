@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EZQueue — System Usability Scale</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:    #050505;
+  --ink:      #111111;
+  --deep:     #1a1a1a;
+  --carbon:   #232323;
+  --muted:    #555555;
+  --dim:      #888888;
+  --border:   #2a2a2a;
+  --border2:  #333333;
+  --surface:  #161616;
+  --surface2: #1e1e1e;
+  --surface3: #242424;
+
+  /* vibrant accent palette */
+  --cyan:     #00e5ff;
+  --lime:     #b2ff59;
+  --amber:    #ffab40;
+  --rose:     #ff4d6d;
+  --violet:   #c77dff;
+  --white:    #f8f8f8;
+
+  --r: 10px;
+  --rl: 14px;
+
+  /* alias for reusable component */
+  --color-text-primary: var(--white);
+  --color-text-secondary: #aaaaaa;
+  --color-text-tertiary: #666666;
+  --color-background-primary: var(--surface);
+  --color-background-secondary: var(--surface2);
+  --color-background-tertiary: var(--black);
+  --color-border-tertiary: var(--border);
+  --color-border-secondary: var(--border2);
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--black);
+  color: var(--white);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── NOISE TEXTURE ─── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ─── TOP BAR ─── */
+.topbar {
+  background: var(--ink);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 16px;
+}
+
+.topbar-left { display: flex; align-items: center; gap: 14px; }
+
+.logo-sq {
+  width: 34px; height: 34px;
+  background: var(--cyan);
+  color: var(--black);
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: -.3px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.brand { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: -.3px; }
+.brand-sub { font-size: 10px; color: var(--dim); margin-top: 1px; font-family: 'Space Mono', monospace; letter-spacing: .3px; }
+
+.topbar-right { display: flex; gap: 6px; align-items: center; }
+
+.tab-btn {
+  padding: 6px 16px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dim);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.tab-btn:hover { background: var(--surface2); color: var(--white); }
+.tab-btn.active {
+  background: var(--cyan);
+  color: var(--black);
+  font-weight: 700;
+}
+
+/* ─── VIEWS ─── */
+.view { display: none; flex: 1; padding: 24px 20px; max-width: 860px; margin: 0 auto; width: 100%; }
+.view.active { display: block; }
+
+/* ─── SESSION BAR ─── */
+.session-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  padding: 14px 20px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.session-bar label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  font-family: 'Space Mono', monospace;
+}
+.session-bar input,
+.session-bar select {
+  padding: 7px 12px;
+  border: 1px solid var(--border2);
+  border-radius: 7px;
+  font-size: 13px;
+  background: var(--surface2);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color .15s;
+}
+.session-bar input:focus,
+.session-bar select:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(0,229,255,.08); }
+.session-bar .spacer { flex: 1; }
+.badge-count {
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  color: var(--dim);
+  font-family: 'Space Mono', monospace;
+  white-space: nowrap;
+}
+
+/* ─── FORM CARD ─── */
+.form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  overflow: hidden;
+  margin-bottom: 14px;
+  transition: border-color .2s;
+}
+.form-card:hover { border-color: var(--border2); }
+
+.form-card-head {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface2);
+}
+.part-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--black);
+  background: var(--cyan);
+  border-radius: 5px;
+  padding: 3px 9px;
+  white-space: nowrap;
+  font-family: 'Space Mono', monospace;
+}
+.part-tag.amber { background: var(--amber); }
+.part-tag.lime { background: var(--lime); }
+.part-tag.violet { background: var(--violet); }
+.part-tag.dim-tag { background: var(--surface3); color: var(--dim); border: 1px solid var(--border2); }
+
+.form-card-head h3 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--white); }
+.form-card-body { padding: 20px; }
+
+/* ─── INFO GRID ─── */
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-bottom: 7px;
+  font-family: 'Space Mono', monospace;
+}
+.field input, .field select {
+  width: 100%;
+  padding: 9px 14px;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--surface2);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  transition: all .15s;
+}
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(0,229,255,.08);
+}
+.field input::placeholder { color: var(--muted); }
+
+/* ─── SCALE LEGEND ─── */
+.scale-legend {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 14px 0;
+}
+.sc {
+  flex: 1;
+  text-align: center;
+  padding: 10px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.3;
+  border-right: 1px solid var(--border);
+  font-family: 'Space Mono', monospace;
+  color: var(--dim);
+}
+.sc:last-child { border-right: none; }
+.sc .n { font-size: 20px; font-weight: 700; display: block; margin-bottom: 3px; font-family: 'Syne', sans-serif; }
+.sc.s1 { background: var(--cyan); color: var(--black); }
+.sc.s1 .n { color: var(--black); }
+
+/* ─── SUS ITEMS ─── */
+.sus-item {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: border-color .2s, box-shadow .2s;
+}
+.sus-item:hover { border-color: var(--border2); }
+.sus-item.answered { border-color: var(--cyan); box-shadow: 0 0 0 1px rgba(0,229,255,.15); }
+
+.item-num {
+  width: 40px; min-width: 40px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+  color: var(--dim);
+  background: var(--surface2);
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+  font-family: 'Space Mono', monospace;
+}
+.sus-item.answered .item-num { color: var(--cyan); }
+
+.item-text {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.rtag {
+  font-size: 9px;
+  color: var(--amber);
+  border: 1px solid rgba(255,171,64,.3);
+  background: rgba(255,171,64,.08);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: 'Space Mono', monospace;
+  flex-shrink: 0;
+}
+
+.radios {
+  display: flex;
+  gap: 5px;
+  padding: 10px 14px;
+  align-items: center;
+  background: var(--surface2);
+  border-left: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.rb { cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.rb input { display: none; }
+.rbc {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  color: var(--muted);
+  background: var(--surface3);
+  transition: all .15s;
+  user-select: none;
+  font-family: 'Space Mono', monospace;
+}
+.rb:hover .rbc { border-color: var(--cyan); color: var(--cyan); background: rgba(0,229,255,.06); }
+.rb input:checked + .rbc { background: var(--cyan); border-color: var(--cyan); color: var(--black); }
+.rb-l { font-size: 8px; color: var(--dim); text-align: center; line-height: 1.2; max-width: 32px; font-family: 'Space Mono', monospace; }
+
+/* ─── PROGRESS ─── */
+.prog-bar {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 7px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 11px;
+  color: var(--dim);
+  font-family: 'Space Mono', monospace;
+}
+.prog-track { flex: 1; height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.prog-fill { height: 100%; background: var(--cyan); border-radius: 99px; transition: width .3s ease; }
+
+/* ─── SCORE PANEL ─── */
+.score-panel {
+  display: none;
+  background: linear-gradient(135deg, var(--ink) 0%, var(--deep) 100%);
+  border: 1px solid var(--cyan);
+  box-shadow: 0 0 40px rgba(0,229,255,.12), inset 0 1px 0 rgba(0,229,255,.1);
+  border-radius: var(--rl);
+  padding: 22px 26px;
+  margin: 14px 0;
+  gap: 22px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.score-big { font-size: 56px; font-weight: 800; line-height: 1; font-family: 'Syne', sans-serif; color: var(--cyan); }
+.score-lbl { font-size: 10px; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; font-family: 'Space Mono', monospace; margin-top: 3px; }
+.score-detail { flex: 1; }
+.score-grade { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+.score-desc { font-size: 12px; color: var(--dim); line-height: 1.5; }
+.score-track2 { height: 3px; background: var(--border2); border-radius: 99px; margin-top: 12px; overflow: hidden; }
+.score-fill2 { height: 100%; background: var(--cyan); border-radius: 99px; transition: width .5s ease; }
+
+/* ─── FEEDBACK ─── */
+.fb-field { margin-bottom: 16px; }
+.fb-field label {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12px; font-weight: 600; color: var(--dim);
+  margin-bottom: 8px;
+}
+.qn {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--black);
+  font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-family: 'Space Mono', monospace;
+}
+.fb-field textarea {
+  width: 100%;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--white);
+  background: var(--surface2);
+  resize: vertical;
+  min-height: 72px;
+  line-height: 1.6;
+  transition: all .15s;
+}
+.fb-field textarea:focus {
+  outline: none;
+  border-color: var(--lime);
+  box-shadow: 0 0 0 3px rgba(178,255,89,.07);
+}
+.fb-field textarea::placeholder { color: var(--muted); }
+
+/* ─── SATISFACTION ─── */
+.sat-row { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; margin: 16px 0 10px; }
+.sb { cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+.sb input { display: none; }
+.sbc {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700;
+  font-family: 'Syne', sans-serif;
+  color: var(--muted);
+  background: var(--surface2);
+  transition: all .15s;
+}
+.sb:hover .sbc { border-color: var(--violet); color: var(--violet); background: rgba(199,125,255,.07); }
+.sb input:checked + .sbc { background: var(--violet); border-color: var(--violet); color: var(--black); }
+.sat-leg { display: flex; justify-content: center; gap: 18px; font-size: 10px; color: var(--dim); margin-top: 6px; font-family: 'Space Mono', monospace; }
+
+/* ─── SUBMIT ─── */
+.submit-row { display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+.btn-primary {
+  padding: 11px 32px;
+  background: var(--cyan);
+  color: var(--black);
+  border: none;
+  border-radius: 8px;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: -.2px;
+}
+.btn-primary:hover { background: #33eaff; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,229,255,.25); }
+.btn-primary:active { transform: translateY(0); }
+.btn-ghost {
+  padding: 11px 20px;
+  background: transparent;
+  color: var(--dim);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn-ghost:hover { background: var(--surface2); color: var(--white); }
+.submit-note { font-size: 11px; color: var(--dim); text-align: center; margin-top: 10px; line-height: 1.5; font-family: 'Space Mono', monospace; }
+
+/* ─── THANK YOU ─── */
+#thank-you {
+  display: none;
+  text-align: center;
+  padding: 60px 20px;
+}
+.ty-icon {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: rgba(178,255,89,.1);
+  border: 1px solid rgba(178,255,89,.3);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 28px;
+}
+.ty-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; color: var(--white); margin-bottom: 10px; }
+.ty-sub { font-size: 13px; color: var(--dim); margin-bottom: 28px; line-height: 1.7; max-width: 380px; margin-left: auto; margin-right: auto; }
+
+/* ─── NOTE BOX ─── */
+.note-box {
+  background: var(--surface3);
+  border-left: 3px solid var(--amber);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.7;
+  margin-top: 12px;
+}
+
+/* ─── DASHBOARD ─── */
+.dash-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 18px; flex-wrap: wrap;
+}
+.dash-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; flex: 1; }
+.dash-actions { display: flex; gap: 8px; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  padding: 16px 18px;
+  transition: border-color .2s;
+}
+.stat-card:hover { border-color: var(--border2); }
+.stat-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 8px; font-family: 'Space Mono', monospace; }
+.stat-val { font-size: 28px; font-weight: 800; font-family: 'Syne', sans-serif; line-height: 1; color: var(--cyan); }
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+.session-filter { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.session-filter select {
+  padding: 7px 12px;
+  border: 1px solid var(--border2);
+  border-radius: 7px;
+  font-size: 12px;
+  background: var(--surface);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+}
+.session-filter select:focus { outline: none; border-color: var(--cyan); }
+.session-filter label { font-size: 11px; color: var(--dim); font-family: 'Space Mono', monospace; }
+
+.responses-table {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.rtable { width: 100%; border-collapse: collapse; font-size: 12px; }
+.rtable th {
+  background: var(--surface2);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 10px;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'Space Mono', monospace;
+}
+.rtable td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--white); }
+.rtable tr:last-child td { border-bottom: none; }
+.rtable tr:hover td { background: var(--surface2); }
+
+.score-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+}
+.score-pill.hi { background: rgba(0,229,255,.15); color: var(--cyan); border: 1px solid rgba(0,229,255,.3); }
+.score-pill.md { background: rgba(178,255,89,.1); color: var(--lime); border: 1px solid rgba(178,255,89,.25); }
+.score-pill.lo { background: rgba(255,77,109,.1); color: var(--rose); border: 1px solid rgba(255,77,109,.25); }
+
+.item-avg-grid { display: grid; grid-template-columns: 1fr; gap: 7px; margin-bottom: 16px; }
+.item-avg-row { display: flex; align-items: center; gap: 12px; font-size: 12px; }
+.item-avg-num { width: 20px; text-align: right; color: var(--dim); font-family: 'Space Mono', monospace; flex-shrink: 0; font-size: 11px; }
+.item-avg-bar-wrap { flex: 1; height: 6px; background: var(--surface3); border-radius: 99px; overflow: hidden; border: 1px solid var(--border); }
+.item-avg-bar { height: 100%; border-radius: 99px; background: var(--cyan); transition: width .5s ease; }
+.item-avg-val { width: 32px; text-align: right; font-family: 'Space Mono', monospace; color: var(--dim); flex-shrink: 0; font-size: 11px; }
+.item-avg-text { flex: 2; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+
+.feedback-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+.fb-q-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  margin-bottom: 10px;
+  margin-top: 14px;
+  font-family: 'Space Mono', monospace;
+}
+.fb-q-label:first-child { margin-top: 0; }
+.fb-entry {
+  border-left: 2px solid var(--border2);
+  padding: 7px 12px;
+  margin-bottom: 7px;
+  font-size: 13px;
+  color: var(--white);
+  line-height: 1.6;
+  border-radius: 0 6px 6px 0;
+}
+.fb-entry:hover { border-left-color: var(--lime); background: rgba(178,255,89,.03); }
+.fb-entry-meta { font-size: 10px; color: var(--dim); margin-top: 3px; font-family: 'Space Mono', monospace; }
+
+.empty-state { text-align: center; padding: 48px 20px; color: var(--dim); font-size: 13px; }
+.empty-icon { font-size: 32px; display: block; margin-bottom: 12px; opacity: .4; }
+
+/* ─── TOAST ─── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--lime);
+  color: var(--black);
+  padding: 11px 24px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Syne', sans-serif;
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  z-index: 999;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ─── HERO SECTION ─── */
+.hero {
+  background: linear-gradient(135deg, var(--ink) 0%, #0d1a1a 50%, var(--deep) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  padding: 36px 40px 32px;
+  margin-bottom: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -80px; right: -80px;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,229,255,.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -60px; left: -40px;
+  width: 240px; height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(178,255,89,.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-eyebrow {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 20px; height: 1px;
+  background: var(--cyan);
+}
+.hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 14px;
+  letter-spacing: -.5px;
+}
+.hero h1 span { color: var(--cyan); }
+.hero p {
+  font-size: 14px;
+  color: var(--dim);
+  line-height: 1.7;
+  max-width: 500px;
+  margin-bottom: 22px;
+}
+.hero-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border2);
+  color: var(--dim);
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-family: 'Space Mono', monospace;
+}
+.chip.c-cyan { border-color: rgba(0,229,255,.3); color: var(--cyan); background: rgba(0,229,255,.06); }
+.chip.c-lime { border-color: rgba(178,255,89,.3); color: var(--lime); background: rgba(178,255,89,.06); }
+
+@media (max-width: 600px) {
+  .topbar { padding: 0 16px; }
+  .view { padding: 16px 12px; }
+  .hero { padding: 24px 20px 20px; }
+  .hero h1 { font-size: 26px; }
+  .info-grid { grid-template-columns: 1fr; }
+  .radios { padding: 8px 10px; gap: 4px; }
+  .rbc { width: 28px; height: 28px; font-size: 11px; }
+  .sbc { width: 38px; height: 38px; font-size: 13px; }
+  .session-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .stat-val { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-sq">EZ</div>
+    <div>
+      <div class="brand">EZQueue SUS</div>
+      <div class="brand-sub">USABILITY EVALUATION</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="tab-btn active" onclick="switchView('form')" id="tab-form">Form</button>
+    <button class="tab-btn" onclick="switchView('dash')" id="tab-dash">Dashboard <span id="resp-count-badge"></span></button>
+  </div>
+</div>
+
+<!-- ═══════════════════ FORM VIEW ═══════════════════ -->
+<div class="view active" id="view-form">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">EZQueue · System Usability Scale</div>
+    <h1>How was your<br><span>experience?</span></h1>
+    <p>Rate your experience with the EZQueue system during today's demonstration. Your feedback shapes the next version.</p>
+    <div class="hero-chips">
+      <span class="chip c-cyan">10-item SUS</span>
+      <span class="chip c-lime">Auto-scored</span>
+      <span class="chip">Anonymous OK</span>
+      <span class="chip">~3 minutes</span>
+    </div>
+  </div>
+
+  <!-- SESSION BAR -->
+  <div class="session-bar">
+    <label>Session</label>
+    <input type="text" id="session-name" placeholder="e.g. Session 1 — May 20" style="width:200px">
+    <label>Date</label>
+    <input type="date" id="session-date" style="width:145px">
+    <div class="spacer"></div>
+    <span class="badge-count" id="session-resp-count">0 responses this session</span>
+  </div>
+
+  <!-- THANK YOU STATE -->
+  <div id="thank-you">
+    <div class="ty-icon">✓</div>
+    <div class="ty-title">Response recorded</div>
+    <div class="ty-sub">Thank you for your time. Your feedback has been saved and will be used to improve EZQueue before the next release.</div>
+    <button class="btn-primary" onclick="resetForm()">Start next respondent →</button>
+  </div>
+
+  <!-- FORM BODY -->
+  <div id="form-body">
+
+    <!-- RESPONDENT INFO -->
+    <div class="form-card">
+      <div class="form-card-head">
+        <span class="part-tag">Info</span>
+        <h3>Respondent information</h3>
+      </div>
+      <div class="form-card-body">
+        <div class="info-grid">
+          <div class="field"><label>Name (optional)</label><input type="text" id="r-name" placeholder="e.g. Juan dela Cruz"></div>
+          <div class="field"><label>Role / department</label><input type="text" id="r-role" placeholder="e.g. Registrar Staff"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSTRUCTIONS -->
+    <div class="form-card">
+      <div class="form-card-head">
+        <span class="part-tag dim-tag">Instructions</span>
+        <h3>How to answer</h3>
+      </div>
+      <div class="form-card-body">
+        <p style="font-size:13px;color:var(--dim);line-height:1.7;margin-bottom:12px">Rate each statement based on your experience with EZQueue during today's demonstration. Select one number per item.</p>
+        <div class="scale-legend">
+          <div class="sc s1"><span class="n">1</span>Strongly<br>Disagree</div>
+          <div class="sc s2"><span class="n">2</span>Disagree</div>
+          <div class="sc s3"><span class="n">3</span>Neutral</div>
+          <div class="sc s4"><span class="n">4</span>Agree</div>
+          <div class="sc s5"><span class="n">5</span>Strongly<br>Agree</div>
+        </div>
+        <div class="note-box"><strong style="color:var(--amber)">Note:</strong> There are no right or wrong answers. All responses are confidential and used solely for system improvement. Items tagged <code style="font-size:10px;background:rgba(255,171,64,.1);color:var(--amber);padding:1px 5px;border-radius:3px;border:1px solid rgba(255,171,64,.3)">R</code> are reverse-scored during analysis — respond naturally.</div>
+      </div>
+    </div>
+
+    <!-- SUS ITEMS -->
+    <div class="form-card">
+      <div class="form-card-head">
+        <span class="part-tag">Part 1</span>
+        <h3>System usability scale — 10 items</h3>
+      </div>
+      <div class="form-card-body">
+        <div class="prog-bar">
+          <span id="prog-text">0 of 10 answered</span>
+          <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+          <span id="prog-pct" style="font-family:'Space Mono',monospace;font-size:11px">0%</span>
+        </div>
+        <div id="sus-items"></div>
+        <div class="score-panel" id="score-panel">
+          <div>
+            <div class="score-big" id="score-big">—</div>
+            <div class="score-lbl">SUS Score</div>
+          </div>
+          <div class="score-detail">
+            <div class="score-grade" id="score-grade"></div>
+            <div class="score-desc" id="score-desc"></div>
+            <div class="score-track2"><div class="score-fill2" id="score-fill2" style="width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPEN-ENDED FEEDBACK -->
+    <div class="form-card">
+      <div class="form-card-head">
+        <span class="part-tag amber">Part 2</span>
+        <h3>Open-ended feedback</h3>
+      </div>
+      <div class="form-card-body">
+        <div class="fb-field">
+          <label><span class="qn">1</span>What did you like most about EZQueue?</label>
+          <textarea id="fb1" placeholder="e.g. The queue display was clear and easy to read..." rows="2"></textarea>
+        </div>
+        <div class="fb-field">
+          <label><span class="qn">2</span>What did you find most challenging or confusing?</label>
+          <textarea id="fb2" placeholder="e.g. I was unsure how to cancel a ticket..." rows="2"></textarea>
+        </div>
+        <div class="fb-field">
+          <label><span class="qn">3</span>What features or improvements would you suggest?</label>
+          <textarea id="fb3" placeholder="e.g. SMS notifications when my turn is near..." rows="2"></textarea>
+        </div>
+        <div class="fb-field">
+          <label><span class="qn">4</span>Any other comments?</label>
+          <textarea id="fb4" placeholder="Anything else..." rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- SATISFACTION -->
+    <div class="form-card">
+      <div class="form-card-head">
+        <span class="part-tag violet">Part 3</span>
+        <h3>Overall satisfaction (1–10)</h3>
+      </div>
+      <div class="form-card-body">
+        <p style="font-size:13px;color:var(--dim);line-height:1.6;margin-bottom:4px">How satisfied are you overall with EZQueue after today's demonstration?</p>
+        <div class="sat-row" id="sat-row"></div>
+        <div class="sat-leg"><span>1–4 · Not satisfied</span><span>5–7 · Moderate</span><span>8–10 · Very satisfied</span></div>
+      </div>
+    </div>
+
+    <div class="submit-row">
+      <button class="btn-ghost" onclick="resetForm()">Clear form</button>
+      <button class="btn-primary" onclick="submitForm()">Submit Response →</button>
+    </div>
+    <p class="submit-note">Responses are stored locally in this browser. View the Dashboard tab to see all results and export CSV.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════ DASHBOARD VIEW ═══════════════════ -->
+<div class="view" id="view-dash">
+  <div class="dash-header">
+    <div class="dash-title">Results Dashboard</div>
+    <div class="dash-actions">
+      <button class="btn-ghost" onclick="exportCSV()" style="font-size:12px">↓ Export CSV</button>
+      <button class="btn-ghost" onclick="clearAll()" style="font-size:12px;color:var(--rose)">Clear all</button>
+    </div>
+  </div>
+
+  <div class="session-filter">
+    <label>Filter by session:</label>
+    <select id="sess-filter" onchange="renderDash()">
+      <option value="all">All sessions</option>
+    </select>
+    <span id="filter-count" style="font-size:11px;color:var(--dim);font-family:'Space Mono',monospace"></span>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Responses</div><div class="stat-val" id="stat-n" style="color:var(--white)">0</div></div>
+    <div class="stat-card"><div class="stat-label">Avg SUS Score</div><div class="stat-val" id="stat-avg">—</div><div class="stat-sub" id="stat-grade">No data yet</div></div>
+    <div class="stat-card"><div class="stat-label">Highest Score</div><div class="stat-val" id="stat-hi" style="color:var(--lime)">—</div></div>
+    <div class="stat-card"><div class="stat-label">Lowest Score</div><div class="stat-val" id="stat-lo" style="color:var(--rose)">—</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Satisfaction</div><div class="stat-val" id="stat-sat" style="color:var(--violet)">—</div><div class="stat-sub">/10</div></div>
+  </div>
+
+  <!-- ITEM AVERAGES -->
+  <div class="form-card" id="item-avg-card">
+    <div class="form-card-head">
+      <span class="part-tag">Analysis</span>
+      <h3>Per-item average ratings</h3>
+    </div>
+    <div class="form-card-body" id="item-avg-body">
+      <div class="empty-state"><span class="empty-icon">📊</span>Submit at least one response to see item averages.</div>
+    </div>
+  </div>
+
+  <!-- RESPONSES TABLE -->
+  <div class="responses-table">
+    <table class="rtable">
+      <thead>
+        <tr>
+          <th>#</th><th>Name</th><th>Role</th><th>Session</th><th>SUS Score</th><th>Satisfaction</th><th>Date</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="resp-tbody">
+        <tr><td colspan="8"><div class="empty-state"><span class="empty-icon">📋</span>No responses yet. Submit the form to begin.</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- QUALITATIVE FEEDBACK -->
+  <div class="feedback-section">
+    <div class="fb-q-label">Q1: What did you like most?</div>
+    <div id="fb-q1"></div>
+    <div class="fb-q-label">Q2: Most challenging or confusing?</div>
+    <div id="fb-q2"></div>
+    <div class="fb-q-label">Q3: Feature suggestions</div>
+    <div id="fb-q3"></div>
+    <div class="fb-q-label">Q4: Other comments</div>
+    <div id="fb-q4"></div>
+  </div>
+</div>
+
+</div><!-- /app -->
+<div class="toast" id="toast"></div>
+
+<script>
+const SUS_ITEMS = [
+  { num:1,  text:"I think that I would like to use this system frequently.",                                               rev:false },
+  { num:2,  text:"I found the system unnecessarily complex.",                                                              rev:true  },
+  { num:3,  text:"I thought the system was easy to use.",                                                                  rev:false },
+  { num:4,  text:"I think that I would need the support of a technical person to be able to use this system.",             rev:true  },
+  { num:5,  text:"I found the various functions in this system were well integrated.",                                      rev:false },
+  { num:6,  text:"I thought there was too much inconsistency in this system.",                                             rev:true  },
+  { num:7,  text:"I would imagine that most people would learn to use this system very quickly.",                           rev:false },
+  { num:8,  text:"I found the system very cumbersome to use.",                                                             rev:true  },
+  { num:9,  text:"I felt very confident using the system.",                                                                rev:false },
+  { num:10, text:"I needed to learn a lot of things before I could get going with this system.",                           rev:true  },
+];
+const RLBLS = ["SD","D","N","A","SA"];
+let responses = [];
+
+function loadData(){ try{ const d = localStorage.getItem('ezqueue_sus_v'); if(d) responses = JSON.parse(d); }catch(e){} }
+function saveData(){ try{ localStorage.setItem('ezqueue_sus_v', JSON.stringify(responses)); }catch(e){} }
+loadData();
+
+// Build SUS items
+const susEl = document.getElementById('sus-items');
+SUS_ITEMS.forEach((item, idx) => {
+  const d = document.createElement('div');
+  d.className = 'sus-item';
+  d.id = 'si-' + item.num;
+  d.innerHTML = `
+    <div class="item-num">${item.num}</div>
+    <div class="item-text">${item.text}${item.rev ? '<span class="rtag">R</span>' : ''}</div>
+    <div class="radios">
+      ${[1,2,3,4,5].map(v => `
+        <label class="rb" title="${['Strongly disagree','Disagree','Neutral','Agree','Strongly agree'][v-1]}">
+          <input type="radio" name="sus${item.num}" value="${v}" onchange="updateScore()">
+          <div class="rbc">${v}</div>
+          ${idx === 0 ? `<div class="rb-l">${RLBLS[v-1]}</div>` : ''}
+        </label>`).join('')}
+    </div>`;
+  susEl.appendChild(d);
+});
+
+// Build satisfaction
+const satEl = document.getElementById('sat-row');
+for(let i = 1; i <= 10; i++){
+  const lb = document.createElement('label');
+  lb.className = 'sb';
+  lb.innerHTML = `<input type="radio" name="sat" value="${i}"><div class="sbc">${i}</div>`;
+  satEl.appendChild(lb);
+}
+
+document.getElementById('session-date').valueAsDate = new Date();
+
+function updateScore(){
+  let answered = 0, total = 0;
+  SUS_ITEMS.forEach(item => {
+    const sel = document.querySelector(`input[name="sus${item.num}"]:checked`);
+    if(sel){
+      answered++;
+      const v = parseInt(sel.value);
+      total += item.rev ? (5 - v) : (v - 1);
+      document.getElementById('si-' + item.num).classList.add('answered');
+    } else {
+      document.getElementById('si-' + item.num).classList.remove('answered');
+    }
+  });
+  const pct = Math.round(answered / 10 * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = `${answered} of 10 answered`;
+  document.getElementById('prog-pct').textContent = pct + '%';
+
+  if(answered < 10){ document.getElementById('score-panel').style.display = 'none'; return; }
+  const score = total * 2.5;
+  document.getElementById('score-panel').style.display = 'flex';
+  document.getElementById('score-big').textContent = score.toFixed(1);
+  document.getElementById('score-fill2').style.width = score + '%';
+  let g, d;
+  if(score >= 90)      { g = 'Best Imaginable (A+)'; d = 'Outstanding — users find the system exemplary.'; }
+  else if(score >= 85) { g = 'Excellent (A)';         d = 'Excellent usability — performs very well.'; }
+  else if(score >= 80) { g = 'Good (B)';              d = 'Good usability — above industry average.'; }
+  else if(score >= 70) { g = 'Okay (C)';              d = 'Acceptable — some improvements recommended.'; }
+  else if(score >= 68) { g = 'Above Average';          d = 'Just above the 68-point benchmark threshold.'; }
+  else if(score >= 60) { g = 'Below Average (D)';     d = 'Usability concerns — improvements needed before deployment.'; }
+  else                 { g = 'Poor / Unacceptable (F)'; d = 'Significant issues — core design needs rethinking.'; }
+  document.getElementById('score-grade').textContent = g;
+  document.getElementById('score-desc').textContent = d;
+}
+
+function computeSUS(susVals){
+  let total = 0;
+  SUS_ITEMS.forEach((item, i) => {
+    const v = susVals[i];
+    total += item.rev ? (5 - v) : (v - 1);
+  });
+  return parseFloat((total * 2.5).toFixed(1));
+}
+
+function submitForm(){
+  const susVals = SUS_ITEMS.map(item => {
+    const sel = document.querySelector(`input[name="sus${item.num}"]:checked`);
+    return sel ? parseInt(sel.value) : null;
+  });
+  if(susVals.some(v => v === null)){ showToast('Please answer all 10 SUS items.'); return; }
+  const score = computeSUS(susVals);
+  const sat = document.querySelector('input[name="sat"]:checked');
+  const session = document.getElementById('session-name').value || 'Session 1';
+  const date = document.getElementById('session-date').value || new Date().toISOString().slice(0,10);
+  const entry = {
+    id: Date.now(), session, date,
+    name: document.getElementById('r-name').value || 'Anonymous',
+    role: document.getElementById('r-role').value || '—',
+    sus: susVals, score,
+    sat: sat ? parseInt(sat.value) : null,
+    fb: [
+      document.getElementById('fb1').value,
+      document.getElementById('fb2').value,
+      document.getElementById('fb3').value,
+      document.getElementById('fb4').value
+    ]
+  };
+  responses.push(entry);
+  saveData();
+  updateBadge();
+  document.getElementById('form-body').style.display = 'none';
+  document.getElementById('thank-you').style.display = 'block';
+  showToast('Response saved!');
+}
+
+function resetForm(){
+  document.getElementById('form-body').style.display = 'block';
+  document.getElementById('thank-you').style.display = 'none';
+  document.getElementById('r-name').value = '';
+  document.getElementById('r-role').value = '';
+  SUS_ITEMS.forEach(item => {
+    document.querySelectorAll(`input[name="sus${item.num}"]`).forEach(r => r.checked = false);
+    document.getElementById('si-' + item.num).classList.remove('answered');
+  });
+  document.querySelectorAll('input[name="sat"]').forEach(r => r.checked = false);
+  ['fb1','fb2','fb3','fb4'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('score-panel').style.display = 'none';
+  document.getElementById('prog-fill').style.width = '0%';
+  document.getElementById('prog-text').textContent = '0 of 10 answered';
+  document.getElementById('prog-pct').textContent = '0%';
+  updateBadge();
+}
+
+function updateBadge(){
+  const session = document.getElementById('session-name').value || 'Session 1';
+  const n = responses.filter(r => r.session === session).length;
+  document.getElementById('session-resp-count').textContent = `${n} response${n !== 1 ? 's' : ''} this session`;
+  const total = responses.length;
+  document.getElementById('resp-count-badge').textContent = total > 0 ? `(${total})` : '';
+}
+
+function switchView(v){
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  document.getElementById('tab-' + v).classList.add('active');
+  if(v === 'dash') renderDash();
+}
+
+function gradeLabel(score){
+  if(score >= 90) return 'Best imaginable';
+  if(score >= 85) return 'Excellent';
+  if(score >= 80) return 'Good';
+  if(score >= 70) return 'Okay';
+  if(score >= 68) return 'Above avg';
+  if(score >= 60) return 'Below avg';
+  return 'Poor';
+}
+
+function renderDash(){
+  const sessFilter = document.getElementById('sess-filter');
+  const sessions = [...new Set(responses.map(r => r.session))].sort();
+  const curSel = sessFilter.value;
+  sessFilter.innerHTML = '<option value="all">All sessions</option>' + sessions.map(s => `<option value="${s}"${s === curSel ? ' selected' : ''}>${s}</option>`).join('');
+
+  const filtered = sessFilter.value === 'all' ? responses : responses.filter(r => r.session === sessFilter.value);
+  document.getElementById('filter-count').textContent = `${filtered.length} response${filtered.length !== 1 ? 's' : ''}`;
+
+  document.getElementById('stat-n').textContent = filtered.length;
+  if(filtered.length === 0){
+    document.getElementById('stat-avg').textContent = '—';
+    document.getElementById('stat-grade').textContent = 'No data yet';
+    document.getElementById('stat-hi').textContent = '—';
+    document.getElementById('stat-lo').textContent = '—';
+    document.getElementById('stat-sat').textContent = '—';
+    document.getElementById('resp-tbody').innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="empty-icon">📋</span>No responses yet.</div></td></tr>`;
+    document.getElementById('item-avg-body').innerHTML = `<div class="empty-state"><span class="empty-icon">📊</span>Submit at least one response.</div>`;
+    ['fb-q1','fb-q2','fb-q3','fb-q4'].forEach(id => document.getElementById(id).innerHTML = '<div class="fb-entry" style="color:var(--dim)">No responses yet.</div>');
+    return;
+  }
+
+  const scores = filtered.map(r => r.score);
+  const avg = scores.reduce((a,b) => a+b, 0) / scores.length;
+  document.getElementById('stat-avg').textContent = avg.toFixed(1);
+  document.getElementById('stat-grade').textContent = gradeLabel(avg);
+  document.getElementById('stat-hi').textContent = Math.max(...scores).toFixed(1);
+  document.getElementById('stat-lo').textContent = Math.min(...scores).toFixed(1);
+  const sats = filtered.filter(r => r.sat).map(r => r.sat);
+  document.getElementById('stat-sat').textContent = sats.length ? (sats.reduce((a,b) => a+b, 0) / sats.length).toFixed(1) : '—';
+
+  // Item averages
+  const itemAvgBody = document.getElementById('item-avg-body');
+  itemAvgBody.innerHTML = '<div class="item-avg-grid">' + SUS_ITEMS.map(item => {
+    const vals = filtered.map(r => r.sus[item.num-1]);
+    const iAvg = vals.reduce((a,b) => a+b, 0) / vals.length;
+    const pct = ((iAvg - 1) / 4) * 100;
+    return `<div class="item-avg-row">
+      <span class="item-avg-num">${item.num}</span>
+      <div class="item-avg-bar-wrap"><div class="item-avg-bar" style="width:${pct.toFixed(1)}%"></div></div>
+      <span class="item-avg-val">${iAvg.toFixed(2)}</span>
+      <span class="item-avg-text" title="${item.text}">${item.text.slice(0,65)}${item.text.length > 65 ? '…' : ''}</span>
+    </div>`;
+  }).join('') + '</div>';
+
+  // Responses table
+  const tbody = document.getElementById('resp-tbody');
+  tbody.innerHTML = filtered.map((r, i) => {
+    const cls = r.score >= 80 ? 'hi' : r.score >= 68 ? 'md' : 'lo';
+    return `<tr>
+      <td style="font-family:'Space Mono',monospace;color:var(--dim)">${i+1}</td>
+      <td>${r.name}</td>
+      <td style="color:var(--muted)">${r.role}</td>
+      <td style="color:var(--muted)">${r.session}</td>
+      <td><span class="score-pill ${cls}">${r.score}</span></td>
+      <td style="font-family:'Space Mono',monospace">${r.sat || '—'}</td>
+      <td style="color:var(--dim)">${r.date}</td>
+      <td><button onclick="deleteResp(${r.id})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;padding:2px 6px;line-height:1" title="Delete">×</button></td>
+    </tr>`;
+  }).join('');
+
+  // Feedback
+  ['fb-q1','fb-q2','fb-q3','fb-q4'].forEach((id, qi) => {
+    const el = document.getElementById(id);
+    const entries = filtered.filter(r => r.fb[qi] && r.fb[qi].trim());
+    el.innerHTML = entries.length
+      ? entries.map(r => `<div class="fb-entry">${r.fb[qi]}<div class="fb-entry-meta">${r.name} · ${r.session} · ${r.date}</div></div>`).join('')
+      : `<div class="fb-entry" style="color:var(--dim);font-style:italic">No responses for this question.</div>`;
+  });
+}
+
+function deleteResp(id){
+  responses = responses.filter(r => r.id !== id);
+  saveData();
+  updateBadge();
+  renderDash();
+  showToast('Response deleted.');
+}
+
+function clearAll(){
+  if(!confirm('Clear all saved responses? This cannot be undone.')) return;
+  responses = [];
+  saveData();
+  updateBadge();
+  renderDash();
+  showToast('All responses cleared.');
+}
+
+function exportCSV(){
+  if(!responses.length){ showToast('No data to export.'); return; }
+  const sessFilter = document.getElementById('sess-filter');
+  const data = sessFilter.value === 'all' ? responses : responses.filter(r => r.session === sessFilter.value);
+  const hdr = ['ID','Name','Role','Session','Date','SUS Score','Grade','Satisfaction',...SUS_ITEMS.map(i => `Item ${i.num}`),'Q1 Liked','Q2 Challenged','Q3 Suggestions','Q4 Other'];
+  const rows = data.map(r => [
+    r.id, `"${r.name}"`, `"${r.role}"`, `"${r.session}"`, r.date, r.score, gradeLabel(r.score), r.sat || '',
+    ...r.sus,
+    `"${(r.fb[0]||'').replace(/"/g,'""')}"`,
+    `"${(r.fb[1]||'').replace(/"/g,'""')}"`,
+    `"${(r.fb[2]||'').replace(/"/g,'""')}"`,
+    `"${(r.fb[3]||'').replace(/"/g,'""')}"`
+  ]);
+  const csv = [hdr, ...rows].map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = `EZQueue_SUS_${sessFilter.value}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  showToast('CSV exported!');
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+updateBadge();
+renderDash();
+</script>
+</body>
+</html>

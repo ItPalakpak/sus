@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EZQueue SUS — Results Dashboard</title>
+<link rel="icon" type="image/png" href="ic_launcher.png" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:    #050505;
+  --ink:      #111111;
+  --deep:     #1a1a1a;
+  --carbon:   #232323;
+  --muted:    #555555;
+  --dim:      #888888;
+  --border:   #2a2a2a;
+  --border2:  #333333;
+  --surface:  #161616;
+  --surface2: #1e1e1e;
+  --surface3: #242424;
+
+  /* vibrant accent palette */
+  --cyan:     #00e5ff;
+  --lime:     #b2ff59;
+  --amber:    #ffab40;
+  --rose:     #ff4d6d;
+  --violet:   #c77dff;
+  --white:    #f8f8f8;
+
+  --r: 10px;
+  --rl: 14px;
+
+  /* alias for reusable component */
+  --color-text-primary: var(--white);
+  --color-text-secondary: #aaaaaa;
+  --color-text-tertiary: #666666;
+  --color-background-primary: var(--surface);
+  --color-background-secondary: var(--surface2);
+  --color-background-tertiary: var(--black);
+  --color-border-tertiary: var(--border);
+  --color-border-secondary: var(--border2);
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--black);
+  color: var(--white);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── NOISE TEXTURE ─── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ─── TOP BAR ─── */
+.topbar {
+  background: var(--ink);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 16px;
+}
+
+.topbar-left { display: flex; align-items: center; gap: 14px; }
+
+.logo-sq {
+  width: 34px; height: 34px;
+  background: var(--cyan);
+  color: var(--black);
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: -.3px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.brand { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: -.3px; }
+.brand-sub { font-size: 10px; color: var(--dim); margin-top: 1px; font-family: 'Space Mono', monospace; letter-spacing: .3px; }
+
+/* ─── VIEWS ─── */
+.view { flex: 1; padding: 24px 20px; max-width: 860px; margin: 0 auto; width: 100%; }
+
+/* ─── FORM CARD ─── */
+.form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  overflow: hidden;
+  margin-bottom: 14px;
+  transition: border-color .2s;
+}
+.form-card:hover { border-color: var(--border2); }
+
+.form-card-head {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface2);
+}
+.part-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--black);
+  background: var(--cyan);
+  border-radius: 5px;
+  padding: 3px 9px;
+  white-space: nowrap;
+  font-family: 'Space Mono', monospace;
+}
+
+.form-card-head h3 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--white); }
+.form-card-body { padding: 20px; }
+
+/* ─── SUBMIT ─── */
+.btn-primary {
+  padding: 11px 32px;
+  background: var(--cyan);
+  color: var(--black);
+  border: none;
+  border-radius: 8px;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: -.2px;
+}
+.btn-primary:hover { background: #33eaff; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,229,255,.25); }
+.btn-primary:active { transform: translateY(0); }
+.btn-ghost {
+  padding: 11px 20px;
+  background: transparent;
+  color: var(--dim);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn-ghost:hover { background: var(--surface2); color: var(--white); }
+
+/* ─── DASHBOARD ─── */
+.dash-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 18px; flex-wrap: wrap;
+}
+.dash-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; flex: 1; }
+.dash-actions { display: flex; gap: 8px; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  padding: 16px 18px;
+  transition: border-color .2s;
+}
+.stat-card:hover { border-color: var(--border2); }
+.stat-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 8px; font-family: 'Space Mono', monospace; }
+.stat-val { font-size: 28px; font-weight: 800; font-family: 'Syne', sans-serif; line-height: 1; color: var(--cyan); }
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+.session-filter { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.session-filter select {
+  padding: 7px 12px;
+  border: 1px solid var(--border2);
+  border-radius: 7px;
+  font-size: 12px;
+  background: var(--surface);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+}
+.session-filter select:focus { outline: none; border-color: var(--cyan); }
+.session-filter label { font-size: 11px; color: var(--dim); font-family: 'Space Mono', monospace; }
+
+.responses-table {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.rtable { width: 100%; border-collapse: collapse; font-size: 12px; }
+.rtable th {
+  background: var(--surface2);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 10px;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'Space Mono', monospace;
+}
+.rtable td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--white); }
+.rtable tr:last-child td { border-bottom: none; }
+.rtable tr:hover td { background: var(--surface2); }
+
+.score-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+}
+.score-pill.hi { background: rgba(0,229,255,.15); color: var(--cyan); border: 1px solid rgba(0,229,255,.3); }
+.score-pill.md { background: rgba(178,255,89,.1); color: var(--lime); border: 1px solid rgba(178,255,89,.25); }
+.score-pill.lo { background: rgba(255,77,109,.1); color: var(--rose); border: 1px solid rgba(255,77,109,.25); }
+
+.item-avg-grid { display: grid; grid-template-columns: 1fr; gap: 7px; margin-bottom: 16px; }
+.item-avg-row { display: flex; align-items: center; gap: 12px; font-size: 12px; }
+.item-avg-num { width: 20px; text-align: right; color: var(--dim); font-family: 'Space Mono', monospace; flex-shrink: 0; font-size: 11px; }
+.item-avg-bar-wrap { flex: 1; height: 6px; background: var(--surface3); border-radius: 99px; overflow: hidden; border: 1px solid var(--border); }
+.item-avg-bar { height: 100%; border-radius: 99px; background: var(--cyan); transition: width .5s ease; }
+.item-avg-val { width: 32px; text-align: right; font-family: 'Space Mono', monospace; color: var(--dim); flex-shrink: 0; font-size: 11px; }
+.item-avg-text { flex: 2; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+
+.feedback-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--rl);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+.fb-q-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  margin-bottom: 10px;
+  margin-top: 14px;
+  font-family: 'Space Mono', monospace;
+}
+.fb-q-label:first-child { margin-top: 0; }
+.fb-entry {
+  border-left: 2px solid var(--border2);
+  padding: 7px 12px;
+  margin-bottom: 7px;
+  font-size: 13px;
+  color: var(--white);
+  line-height: 1.6;
+  border-radius: 0 6px 6px 0;
+}
+.fb-entry:hover { border-left-color: var(--lime); background: rgba(178,255,89,.03); }
+.fb-entry-meta { font-size: 10px; color: var(--dim); margin-top: 3px; font-family: 'Space Mono', monospace; }
+
+.empty-state { text-align: center; padding: 48px 20px; color: var(--dim); font-size: 13px; }
+.empty-icon { font-size: 32px; display: block; margin-bottom: 12px; opacity: .4; }
+
+/* ─── TOAST ─── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--lime);
+  color: var(--black);
+  padding: 11px 24px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Syne', sans-serif;
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  z-index: 999;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 600px) {
+  .topbar { padding: 0 16px; }
+  .view { padding: 16px 12px; }
+  .stat-val { font-size: 22px; }
+  .session-filter { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- PASSCODE OVERLAY -->
+<div id="passcode-overlay" style="position:fixed;inset:0;background:rgba(5,5,5,0.92);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:1000;box-sizing:border-box;padding:20px;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:32px 28px;width:100%;max-width:400px;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,0.6);">
+    <div class="logo-sq" style="margin:0 auto 18px;width:44px;height:44px;font-size:14px;border-radius:10px;">EZ</div>
+    <h3 style="font-family:'Syne',sans-serif;margin-bottom:8px;font-size:18px;">Admin Access Required</h3>
+    <p style="font-size:12px;color:var(--dim);margin-bottom:24px;line-height:1.6;">Please enter the admin passcode to unlock the SUS evaluation statistics and CSV export.</p>
+    <input type="password" id="admin-passcode" placeholder="••••••••" style="width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--white);font-family:'Space Mono',monospace;text-align:center;font-size:20px;letter-spacing:2px;margin-bottom:12px;box-sizing:border-box;">
+    <div id="passcode-error" style="color:var(--rose);font-size:12px;margin-bottom:14px;display:none;">Invalid passcode. Please try again.</div>
+    <button class="btn-primary" onclick="verifyPasscode()" style="width:100%;padding:11px;">Verify &amp; Access →</button>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-sq">EZ</div>
+    <div>
+      <div class="brand">EZQueue SUS</div>
+      <div class="brand-sub">ADMIN DASHBOARD</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ DASHBOARD VIEW ═══════════════════ -->
+<div class="view" id="view-dash">
+  <div class="dash-header">
+    <div class="dash-title">Results Dashboard</div>
+    <div class="dash-actions">
+      <button class="btn-ghost" onclick="exportCSV()" style="font-size:12px">↓ Export CSV</button>
+      <button class="btn-ghost" onclick="clearAll()" style="font-size:12px;color:var(--rose)">Clear all</button>
+    </div>
+  </div>
+
+  <div class="session-filter">
+    <label>Filter by session:</label>
+    <select id="sess-filter" onchange="renderDash()">
+      <option value="all">All sessions</option>
+    </select>
+    <span id="filter-count" style="font-size:11px;color:var(--dim);font-family:'Space Mono',monospace"></span>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Responses</div><div class="stat-val" id="stat-n" style="color:var(--white)">0</div></div>
+    <div class="stat-card"><div class="stat-label">Avg SUS Score</div><div class="stat-val" id="stat-avg">—</div><div class="stat-sub" id="stat-grade">No data yet</div></div>
+    <div class="stat-card"><div class="stat-label">Highest Score</div><div class="stat-val" id="stat-hi" style="color:var(--lime)">—</div></div>
+    <div class="stat-card"><div class="stat-label">Lowest Score</div><div class="stat-val" id="stat-lo" style="color:var(--rose)">—</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Satisfaction</div><div class="stat-val" id="stat-sat" style="color:var(--violet)">—</div><div class="stat-sub">/10</div></div>
+  </div>
+
+  <!-- ITEM AVERAGES -->
+  <div class="form-card" id="item-avg-card">
+    <div class="form-card-head">
+      <span class="part-tag">Analysis</span>
+      <h3>Per-item average ratings</h3>
+    </div>
+    <div class="form-card-body" id="item-avg-body">
+      <div class="empty-state"><span class="empty-icon">📊</span>Submit at least one response to see item averages.</div>
+    </div>
+  </div>
+
+  <!-- RESPONSES TABLE -->
+  <div class="responses-table">
+    <table class="rtable">
+      <thead>
+        <tr>
+          <th>#</th><th>Name</th><th>Role</th><th>Session</th><th>SUS Score</th><th>Satisfaction</th><th>Date</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="resp-tbody">
+        <tr><td colspan="8"><div class="empty-state"><span class="empty-icon">📋</span>No responses yet. Submit the form to begin.</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- QUALITATIVE FEEDBACK -->
+  <div class="feedback-section">
+    <div class="fb-q-label">Q1: What did you like most?</div>
+    <div id="fb-q1"></div>
+    <div class="fb-q-label">Q2: Most challenging or confusing?</div>
+    <div id="fb-q2"></div>
+    <div class="fb-q-label">Q3: Feature suggestions</div>
+    <div id="fb-q3"></div>
+    <div class="fb-q-label">Q4: Other comments</div>
+    <div id="fb-q4"></div>
+  </div>
+</div>
+
+</div><!-- /app -->
+<div class="toast" id="toast"></div>
+
+<script>
+const SUS_ITEMS = [
+  { num:1,  text:"I think that I would like to use this system frequently.",                                               rev:false },
+  { num:2,  text:"I found the system unnecessarily complex.",                                                              rev:true  },
+  { num:3,  text:"I thought the system was easy to use.",                                                                  rev:false },
+  { num:4,  text:"I think that I would need the support of a technical person to be able to use this system.",             rev:true  },
+  { num:5,  text:"I found the various functions in this system were well integrated.",                                      rev:false },
+  { num:6,  text:"I thought there was too much inconsistency in this system.",                                             rev:true  },
+  { num:7,  text:"I would imagine that most people would learn to use this system very quickly.",                           rev:false },
+  { num:8,  text:"I found the system very cumbersome to use.",                                                             rev:true  },
+  { num:9,  text:"I felt very confident using the system.",                                                                rev:false },
+  { num:10, text:"I needed to learn a lot of things before I could get going with this system.",                           rev:true  },
+];
+
+let responses = [];
+let passcode = sessionStorage.getItem('sus_admin_passcode') || '';
+
+async function verifyPasscode() {
+  const pInput = document.getElementById('admin-passcode').value;
+  const errorDiv = document.getElementById('passcode-error');
+  errorDiv.style.display = 'none';
+
+  if (!pInput) {
+    errorDiv.textContent = 'Please enter a passcode.';
+    errorDiv.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch('/.netlify/functions/admin-sus', {
+      method: 'GET',
+      headers: { 'Authorization': pInput }
+    });
+
+    if (res.status === 401) {
+      errorDiv.textContent = 'Invalid passcode. Please try again.';
+      errorDiv.style.display = 'block';
+      return;
+    }
+
+    if (!res.ok) {
+      const errBody = await res.json();
+      errorDiv.textContent = `Server Error: ${errBody.error || 'Unable to connect'}`;
+      errorDiv.style.display = 'block';
+      return;
+    }
+
+    // Success
+    passcode = pInput;
+    sessionStorage.setItem('sus_admin_passcode', passcode);
+    document.getElementById('passcode-overlay').style.display = 'none';
+    
+    responses = await res.json();
+    renderDash();
+    showToast('Dashboard unlocked!');
+
+  } catch (err) {
+    errorDiv.textContent = 'Network error. Make sure your server is running.';
+    errorDiv.style.display = 'block';
+  }
+}
+
+// Automatically verify if passcode is already stored in session
+if (passcode) {
+  document.getElementById('admin-passcode').value = passcode;
+  verifyPasscode();
+}
+
+function gradeLabel(score){
+  if(score >= 90) return 'Best imaginable';
+  if(score >= 85) return 'Excellent';
+  if(score >= 80) return 'Good';
+  if(score >= 70) return 'Okay';
+  if(score >= 68) return 'Above avg';
+  if(score >= 60) return 'Below avg';
+  return 'Poor';
+}
+
+function renderDash(){
+  const sessFilter = document.getElementById('sess-filter');
+  const sessions = [...new Set(responses.map(r => r.session))].sort();
+  const curSel = sessFilter.value;
+  sessFilter.innerHTML = '<option value="all">All sessions</option>' + sessions.map(s => `<option value="${s}"${s === curSel ? ' selected' : ''}>${s}</option>`).join('');
+
+  const filtered = sessFilter.value === 'all' ? responses : responses.filter(r => r.session === sessFilter.value);
+  document.getElementById('filter-count').textContent = `${filtered.length} response${filtered.length !== 1 ? 's' : ''}`;
+
+  document.getElementById('stat-n').textContent = filtered.length;
+  if(filtered.length === 0){
+    document.getElementById('stat-avg').textContent = '—';
+    document.getElementById('stat-grade').textContent = 'No data yet';
+    document.getElementById('stat-hi').textContent = '—';
+    document.getElementById('stat-lo').textContent = '—';
+    document.getElementById('stat-sat').textContent = '—';
+    document.getElementById('resp-tbody').innerHTML = `<tr><td colspan="8"><div class="empty-state"><span class="empty-icon">📋</span>No responses yet.</div></td></tr>`;
+    document.getElementById('item-avg-body').innerHTML = `<div class="empty-state"><span class="empty-icon">📊</span>Submit at least one response.</div>`;
+    ['fb-q1','fb-q2','fb-q3','fb-q4'].forEach(id => document.getElementById(id).innerHTML = '<div class="fb-entry" style="color:var(--dim)">No responses yet.</div>');
+    return;
+  }
+
+  const scores = filtered.map(r => r.score);
+  const avg = scores.reduce((a,b) => a+b, 0) / scores.length;
+  document.getElementById('stat-avg').textContent = avg.toFixed(1);
+  document.getElementById('stat-grade').textContent = gradeLabel(avg);
+  document.getElementById('stat-hi').textContent = Math.max(...scores).toFixed(1);
+  document.getElementById('stat-lo').textContent = Math.min(...scores).toFixed(1);
+  const sats = filtered.filter(r => r.sat).map(r => r.sat);
+  document.getElementById('stat-sat').textContent = sats.length ? (sats.reduce((a,b) => a+b, 0) / sats.length).toFixed(1) : '—';
+
+  // Item averages
+  const itemAvgBody = document.getElementById('item-avg-body');
+  itemAvgBody.innerHTML = '<div class="item-avg-grid">' + SUS_ITEMS.map(item => {
+    const vals = filtered.map(r => r.sus[item.num-1]);
+    const iAvg = vals.reduce((a,b) => a+b, 0) / vals.length;
+    const pct = ((iAvg - 1) / 4) * 100;
+    return `<div class="item-avg-row">
+      <span class="item-avg-num">${item.num}</span>
+      <div class="item-avg-bar-wrap"><div class="item-avg-bar" style="width:${pct.toFixed(1)}%"></div></div>
+      <span class="item-avg-val">${iAvg.toFixed(2)}</span>
+      <span class="item-avg-text" title="${item.text}">${item.text.slice(0,65)}${item.text.length > 65 ? '…' : ''}</span>
+    </div>`;
+  }).join('') + '</div>';
+
+  // Responses table
+  const tbody = document.getElementById('resp-tbody');
+  tbody.innerHTML = filtered.map((r, i) => {
+    const cls = r.score >= 80 ? 'hi' : r.score >= 68 ? 'md' : 'lo';
+    return `<tr>
+      <td style="font-family:'Space Mono',monospace;color:var(--dim)">${i+1}</td>
+      <td>${r.name}</td>
+      <td style="color:var(--muted)">${r.role}</td>
+      <td style="color:var(--muted)">${r.session}</td>
+      <td><span class="score-pill ${cls}">${r.score}</span></td>
+      <td style="font-family:'Space Mono',monospace">${r.sat || '—'}</td>
+      <td style="color:var(--dim)">${r.date}</td>
+      <td><button onclick="deleteResp(${r.id})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;padding:2px 6px;line-height:1" title="Delete">×</button></td>
+    </tr>`;
+  }).join('');
+
+  // Feedback
+  ['fb-q1','fb-q2','fb-q3','fb-q4'].forEach((id, qi) => {
+    const el = document.getElementById(id);
+    const entries = filtered.filter(r => r.fb[qi] && r.fb[qi].trim());
+    el.innerHTML = entries.length
+      ? entries.map(r => `<div class="fb-entry">${r.fb[qi]}<div class="fb-entry-meta">${r.name} · ${r.session} · ${r.date}</div></div>`).join('')
+      : `<div class="fb-entry" style="color:var(--dim);font-style:italic">No responses for this question.</div>`;
+  });
+}
+
+async function deleteResp(id){
+  if(!confirm('Delete this response? This cannot be undone.')) return;
+  try {
+    const res = await fetch(`/.netlify/functions/admin-sus?id=${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': passcode }
+    });
+    if (!res.ok) throw new Error('Deletion failed');
+    
+    responses = responses.filter(r => r.id !== id);
+    renderDash();
+    showToast('Response deleted.');
+  } catch (err) {
+    showToast('Error deleting response.');
+  }
+}
+
+async function clearAll(){
+  if(!confirm('Clear all saved responses? This cannot be undone.')) return;
+  try {
+    const res = await fetch('/.netlify/functions/admin-sus', {
+      method: 'DELETE',
+      headers: { 'Authorization': passcode }
+    });
+    if (!res.ok) throw new Error('Truncate failed');
+
+    responses = [];
+    renderDash();
+    showToast('All responses cleared.');
+  } catch (err) {
+    showToast('Error clearing responses.');
+  }
+}
+
+function exportCSV(){
+  if(!responses.length){ showToast('No data to export.'); return; }
+  const sessFilter = document.getElementById('sess-filter');
+  const data = sessFilter.value === 'all' ? responses : responses.filter(r => r.session === sessFilter.value);
+  const hdr = ['ID','Name','Role','Session','Date','SUS Score','Grade','Satisfaction',...SUS_ITEMS.map(i => `Item ${i.num}`),'Q1 Liked','Q2 Challenged','Q3 Suggestions','Q4 Other'];
+  const rows = data.map(r => [
+    r.id, `"${r.name}"`, `"${r.role}"`, `"${r.session}"`, r.date, r.score, gradeLabel(r.score), r.sat || '',
+    ...r.sus,
+    `"${(r.fb[0]||'').replace(/"/g,'""')}"`,
+    `"${(r.fb[1]||'').replace(/"/g,'""')}"`,
+    `"${(r.fb[2]||'').replace(/"/g,'""')}"`,
+    `"${(r.fb[3]||'').replace(/"/g,'""')}"`
+  ]);
+  const csv = [hdr, ...rows].map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = `EZQueue_SUS_${sessFilter.value}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  showToast('CSV exported!');
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
