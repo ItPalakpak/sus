@@ -449,3 +449,35 @@ body::before {
   .stat-val { font-size: 22px; }
   .session-filter { flex-direction: column; align-items: flex-start; gap: 8px; }
 }
+
+/* Custom Confirm Modal styling */
+.confirm-card {
+  max-width: 360px;
+  border-color: rgba(255, 77, 109, 0.3) !important;
+  box-shadow: 0 12px 48px rgba(255, 77, 109, 0.05), 0 4px 20px rgba(0,0,0,0.5) !important;
+}
+.confirm-icon {
+  font-size: 40px;
+  color: var(--rose);
+  margin-bottom: 10px;
+  text-shadow: 0 0 12px rgba(255, 77, 109, 0.4);
+}
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+  width: 100%;
+}
+.confirm-cancel-btn {
+  flex: 1;
+}
+.confirm-yes-btn {
+  flex: 1;
+  background: var(--rose) !important;
+  color: var(--white) !important;
+}
+.confirm-yes-btn:hover {
+  background: #ff6b8b !important;
+  box-shadow: 0 4px 20px rgba(255, 77, 109, 0.3) !important;
+}

@@ -189,8 +189,37 @@ function renderDash(){
   });
 }
 
+let confirmResolve = null;
+let confirmPendingAction = null;
+
+function showConfirm(title, desc, action) {
+  return new Promise((resolve) => {
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-desc').textContent = desc;
+    document.getElementById('confirm-modal').style.display = 'flex';
+    confirmResolve = resolve;
+  });
+}
+
+function closeConfirm() {
+  document.getElementById('confirm-modal').style.display = 'none';
+  if (confirmResolve) {
+    confirmResolve(false);
+    confirmResolve = null;
+  }
+}
+
+function handleConfirmYes() {
+  document.getElementById('confirm-modal').style.display = 'none';
+  if (confirmResolve) {
+    confirmResolve(true);
+    confirmResolve = null;
+  }
+}
+
 async function deleteResp(id){
-  if(!confirm('Delete this response? This cannot be undone.')) return;
+  const confirmed = await showConfirm('Delete Response', 'Are you sure you want to delete this response? This cannot be undone.');
+  if(!confirmed) return;
   try {
     const res = await fetch(`/.netlify/functions/admin-sus?id=${id}`, {
       method: 'DELETE',
@@ -207,7 +236,8 @@ async function deleteResp(id){
 }
 
 async function clearAll(){
-  if(!confirm('Clear all saved responses? This cannot be undone.')) return;
+  const confirmed = await showConfirm('Clear All Responses', 'Are you sure you want to clear all responses? This cannot be undone.');
+  if(!confirmed) return;
   try {
     const res = await fetch('/.netlify/functions/admin-sus', {
       method: 'DELETE',
@@ -223,26 +253,81 @@ async function clearAll(){
   }
 }
 
+function escapeCSV(val) {
+  if (val === null || val === undefined) return '';
+  let str = String(val);
+  str = str.replace(/"/g, '""');
+  if (str.includes(',') || str.includes('\n') || str.includes('\r') || str.includes('"')) {
+    return `"${str}"`;
+  }
+  return str;
+}
+
 function exportCSV(){
   if(!responses.length){ showToast('No data to export.'); return; }
   const sessFilter = document.getElementById('sess-filter');
   if (!sessFilter) return;
   const data = sessFilter.value === 'all' ? responses : responses.filter(r => r.session === sessFilter.value);
-  const hdr = ['ID','Name','Role','Session','Date','SUS Score','Grade','Satisfaction',...SUS_ITEMS.map(i => `Item ${i.num}`),'Q1 Liked','Q2 Challenged','Q3 Suggestions','Q4 Other'];
-  const rows = data.map(r => [
-    r.id, `"${r.name}"`, `"${r.role}"`, `"${r.session}"`, r.date, r.score, gradeLabel(r.score), r.sat || '',
-    ...r.sus,
-    `"${(r.fb[0]||'').replace(/"/g,'""')}"`,
-    `"${(r.fb[1]||'').replace(/"/g,'""')}"`,
-    `"${(r.fb[2]||'').replace(/"/g,'""')}"`,
-    `"${(r.fb[3]||'').replace(/"/g,'""')}"`
-  ]);
-  const csv = [hdr, ...rows].map(r => r.join(',')).join('\n');
+  
+  const now = new Date();
+  const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+  
+  // Compute overall stats for the exported dataset
+  const scores = data.map(r => r.score);
+  const avgScore = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : '0.0';
+  const grade = scores.length ? gradeLabel(parseFloat(avgScore)) : 'N/A';
+  const sats = data.filter(r => r.sat).map(r => r.sat);
+  const avgSat = sats.length ? (sats.reduce((a, b) => a + b, 0) / sats.length).toFixed(1) : 'N/A';
+
+  // Construct metadata rows
+  const metadata = [
+    ['EZQueue System Usability Scale (SUS) Survey Export Report'],
+    ['Generated On', dateStr],
+    ['Target Session', sessFilter.value === 'all' ? 'All Sessions' : sessFilter.value],
+    ['Total Exported Responses', data.length],
+    ['Average SUS Score', `${avgScore} (${grade})`],
+    ['Average Satisfaction Rating', `${avgSat} / 10`],
+    [], // Empty row separating metadata from the dataset
+  ];
+
+  const csvRows = [];
+  metadata.forEach(row => {
+    csvRows.push(row.map(escapeCSV).join(','));
+  });
+
+  const hdr = ['ID', 'Name', 'Role', 'Session', 'Date', 'SUS Score', 'Grade', 'Satisfaction', ...SUS_ITEMS.map(i => `Item ${i.num}`), 'Q1 Liked', 'Q2 Challenged', 'Q3 Suggestions', 'Q4 Other'];
+  csvRows.push(hdr.map(escapeCSV).join(','));
+
+  data.forEach(r => {
+    const row = [
+      r.id,
+      r.name,
+      r.role,
+      r.session,
+      r.date,
+      r.score,
+      gradeLabel(r.score),
+      r.sat || '',
+      ...r.sus,
+      r.fb[0] || '',
+      r.fb[1] || '',
+      r.fb[2] || '',
+      r.fb[3] || ''
+    ];
+    csvRows.push(row.map(escapeCSV).join(','));
+  });
+
+  const csvContent = csvRows.join('\n');
+  
+  // Download using UTF-8 BOM so Excel displays correctly
+  const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = `EZQueue_SUS_${sessFilter.value}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.href = url;
+  a.download = `EZQueue_SUS_${sessFilter.value.replace(/[^a-z0-9_-]/gi, '_')}_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
-  showToast('CSV exported!');
+  URL.revokeObjectURL(url);
+  showToast('Excel/CSV exported!');
 }
 
 function showToast(msg){
