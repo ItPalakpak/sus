@@ -167,15 +167,15 @@ async function submitForm(){
     });
     
     if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
       if (res.status === 429) {
-        const errorData = await res.json();
         err.textContent = `⚠ ${errorData.detail || 'Limit reached or survey closed.'}`;
         err.classList.add('show');
         btn.disabled = true;
         btn.textContent = 'Closed';
         return;
       }
-      throw new Error('Database insertion failed');
+      throw new Error(errorData.detail || errorData.error || 'Database insertion failed');
     }
 
     // Track submission count in localStorage
@@ -185,7 +185,7 @@ async function submitForm(){
     document.getElementById('thank-you').style.display = 'block';
     showToast('Response saved!');
   } catch (e) {
-    err.textContent = '⚠ An error occurred while saving your response. Please try again.';
+    err.textContent = `⚠ Submission failed: ${e.message}`;
     err.classList.add('show');
     btn.disabled = false;
     btn.textContent = 'Submit Response →';

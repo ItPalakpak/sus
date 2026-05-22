@@ -46,7 +46,7 @@ async function verifyPasscode() {
     if (!res.ok) {
       const errBody = await res.json();
       if (errorDiv) {
-        errorDiv.textContent = `Server Error: ${errBody.error || 'Unable to connect'}`;
+        errorDiv.textContent = `Server Error: ${errBody.error || 'Unable to connect'}${errBody.detail ? ' (' + errBody.detail + ')' : ''}`;
         errorDiv.style.display = 'block';
       }
       return;
