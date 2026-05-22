@@ -6,7 +6,7 @@ const SUS_ITEMS = [
   { num:5,  text:"I found the various functions in this system were well integrated.",                                      rev:false },
   { num:6,  text:"I thought there was too much inconsistency in this system.",                                             rev:true  },
   { num:7,  text:"I would imagine that most people would learn to use this system very quickly.",                           rev:false },
-  { num:8,  text:"I found the system very cumbersome to use.",                                                             rev:true  },
+  { num:8,  text:"I found the system very cumbersome or heavy to use.",                                                             rev:true  },
   { num:9,  text:"I felt very confident using the system.",                                                                rev:false },
   { num:10, text:"I needed to learn a lot of things before I could get going with this system.",                           rev:true  },
 ];
