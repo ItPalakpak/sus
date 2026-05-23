@@ -531,18 +531,18 @@ body::before {
   position: absolute;
   top: 36px;
   right: 10px;
-  width: 280px;
+  width: 330px;
   background: rgba(22, 22, 22, 0.96);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border2);
   border-radius: 8px;
-  padding: 14px;
+  padding: 16px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.6);
   z-index: 200;
   display: none;
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.5;
   text-align: left;
   pointer-events: auto;
@@ -558,9 +558,9 @@ body::before {
 .calc-tooltip-title {
   font-family: 'Syne', sans-serif;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 15px;
   color: var(--text-primary);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -568,13 +568,13 @@ body::before {
 .calc-tooltip-formula {
   font-family: 'Space Mono', monospace;
   background: var(--black);
-  padding: 6px 8px;
+  padding: 8px 10px;
   border-radius: 4px;
   border: 1px solid var(--border);
-  margin: 6px 0;
+  margin: 8px 0;
   color: var(--cyan);
   word-break: break-word;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 /* Accordion per Feedback Question */
