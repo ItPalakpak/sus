@@ -402,3 +402,55 @@ async function saveActiveSession() {
     }
   }
 }
+
+// Toggle tooltip menus
+function toggleTooltip(event, tooltipId) {
+  event.stopPropagation();
+  
+  // Close all other tooltips
+  const allTooltips = document.querySelectorAll('.calc-tooltip');
+  allTooltips.forEach(tt => {
+    if (tt.id !== tooltipId) {
+      tt.classList.remove('show');
+    }
+  });
+
+  const target = document.getElementById(tooltipId);
+  if (target) {
+    target.classList.toggle('show');
+  }
+}
+
+// Global click listener to close tooltips when clicking outside
+document.addEventListener('click', (event) => {
+  const tooltips = document.querySelectorAll('.calc-tooltip');
+  tooltips.forEach(tt => {
+    if (!tt.contains(event.target) && !event.target.closest('.calc-info-btn')) {
+      tt.classList.remove('show');
+    }
+  });
+});
+
+// Toggle Accordions smoothly
+function toggleAccordion(header) {
+  const item = header.parentElement;
+  const content = header.nextElementSibling;
+  
+  item.classList.toggle('active');
+  
+  if (item.classList.contains('active')) {
+    content.style.maxHeight = content.scrollHeight + 'px';
+    content.addEventListener('transitionend', function onEnd() {
+      if (item.classList.contains('active')) {
+        content.style.maxHeight = 'none';
+      }
+      content.removeEventListener('transitionend', onEnd);
+    });
+  } else {
+    if (content.style.maxHeight === 'none' || !content.style.maxHeight) {
+      content.style.maxHeight = content.scrollHeight + 'px';
+      content.offsetHeight; // Force repaint
+    }
+    content.style.maxHeight = '0px';
+  }
+}

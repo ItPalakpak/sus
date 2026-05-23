@@ -77,11 +77,74 @@
   </div>
 
   <div class="stats-grid">
-    <div class="stat-card"><div class="stat-label">Responses</div><div class="stat-val stat-val-white" id="stat-n">0</div></div>
-    <div class="stat-card"><div class="stat-label">Avg SUS Score</div><div class="stat-val" id="stat-avg">—</div><div class="stat-sub" id="stat-grade">No data yet</div></div>
-    <div class="stat-card"><div class="stat-label">Highest Score</div><div class="stat-val stat-val-lime" id="stat-hi">—</div></div>
-    <div class="stat-card"><div class="stat-label">Lowest Score</div><div class="stat-val stat-val-rose" id="stat-lo">—</div></div>
-    <div class="stat-card"><div class="stat-label">Avg Satisfaction</div><div class="stat-val stat-val-violet" id="stat-sat">—</div><div class="stat-sub">/10</div></div>
+    <div class="stat-card">
+      <div class="stat-label">Responses</div>
+      <div class="stat-val stat-val-white" id="stat-n">0</div>
+      <button class="calc-info-btn" onclick="toggleTooltip(event, 'tt-responses')" aria-label="Responses Formula">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+      </button>
+      <div class="calc-tooltip" id="tt-responses">
+        <div class="calc-tooltip-title">Total Responses</div>
+        Total count of survey evaluations matching the active session filter.
+        <div class="calc-tooltip-formula">Count(Rows)</div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-label">Avg SUS Score</div>
+      <div class="stat-val" id="stat-avg">—</div>
+      <div class="stat-sub" id="stat-grade">No data yet</div>
+      <button class="calc-info-btn" onclick="toggleTooltip(event, 'tt-avg-sus')" aria-label="SUS Average Formula">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+      </button>
+      <div class="calc-tooltip" id="tt-avg-sus">
+        <div class="calc-tooltip-title">Average SUS Score</div>
+        The mean usability score of all selected surveys. Ranges from 0 to 100.
+        <div class="calc-tooltip-formula">Avg = (∑ Individual SUS) / N</div>
+        Individual score:
+        <div class="calc-tooltip-formula">SUS = (∑(Odd - 1) + ∑(5 - Even)) × 2.5</div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-label">Highest Score</div>
+      <div class="stat-val stat-val-lime" id="stat-hi">—</div>
+      <button class="calc-info-btn" onclick="toggleTooltip(event, 'tt-hi-score')" aria-label="Highest Score Formula">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+      </button>
+      <div class="calc-tooltip" id="tt-hi-score">
+        <div class="calc-tooltip-title">Highest SUS Score</div>
+        The maximum individual SUS score recorded in the current dataset.
+        <div class="calc-tooltip-formula">Max(SUS_1, SUS_2, ..., SUS_N)</div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-label">Lowest Score</div>
+      <div class="stat-val stat-val-rose" id="stat-lo">—</div>
+      <button class="calc-info-btn" onclick="toggleTooltip(event, 'tt-lo-score')" aria-label="Lowest Score Formula">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+      </button>
+      <div class="calc-tooltip" id="tt-lo-score">
+        <div class="calc-tooltip-title">Lowest SUS Score</div>
+        The minimum individual SUS score recorded in the current dataset.
+        <div class="calc-tooltip-formula">Min(SUS_1, SUS_2, ..., SUS_N)</div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-label">Avg Satisfaction</div>
+      <div class="stat-val stat-val-violet" id="stat-sat">—</div>
+      <div class="stat-sub">/10</div>
+      <button class="calc-info-btn" onclick="toggleTooltip(event, 'tt-sat')" aria-label="Satisfaction Average Formula">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+      </button>
+      <div class="calc-tooltip" id="tt-sat">
+        <div class="calc-tooltip-title">Average Satisfaction</div>
+        The average user satisfaction rating (from 1 to 10). Excludes blank submissions.
+        <div class="calc-tooltip-formula">Avg = (∑ Ratings) / N_sat</div>
+      </div>
+    </div>
   </div>
 
   <!-- ITEM AVERAGES -->
@@ -89,6 +152,16 @@
     <div class="form-card-head">
       <span class="part-tag">Analysis</span>
       <h3>Per-item average ratings</h3>
+      <button class="calc-info-btn" onclick="toggleTooltip(event, 'tt-item-avg')" aria-label="Item Averages Formula">
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+      </button>
+      <div class="calc-tooltip" id="tt-item-avg">
+        <div class="calc-tooltip-title">Per-Item Averages</div>
+        The average rating (1 to 5) for each of the 10 questions. The progress bar visualizes how close the score is to the maximum possible rating of 5.
+        <div class="calc-tooltip-formula">Avg = (∑ Responses) / N</div>
+        Bar Width % calculation:
+        <div class="calc-tooltip-formula">Width = ((Avg - 1) / 4) × 100%</div>
+      </div>
     </div>
     <div class="form-card-body" id="item-avg-body">
       <div class="empty-state"><span class="empty-icon">📊</span>Submit at least one response to see item averages.</div>
@@ -97,6 +170,17 @@
 
   <!-- RESPONSES TABLE -->
   <div class="responses-table">
+    <button class="calc-info-btn" onclick="toggleTooltip(event, 'tt-resp-table')" aria-label="Table Legend">
+      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+    </button>
+    <div class="calc-tooltip" id="tt-resp-table">
+      <div class="calc-tooltip-title">SUS Score Classification</div>
+      SUS scores are classified and color-coded into three categories:
+      <div class="calc-tooltip-formula" style="color: var(--white); background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2);">Green (Hi): ≥ 80 (Good/Best)</div>
+      <div class="calc-tooltip-formula" style="color: var(--text-secondary); background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15);">Yellow (Md): 68 - 79 (Okay/Acceptable)</div>
+      <div class="calc-tooltip-formula" style="color: var(--text-tertiary); background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1);">Red (Lo): &lt; 68 (Poor/Below Avg)</div>
+      68 is the global industry average usability benchmark.
+    </div>
     <table class="rtable">
       <thead>
         <tr>
@@ -109,16 +193,59 @@
     </table>
   </div>
 
-  <!-- QUALITATIVE FEEDBACK -->
-  <div class="feedback-section">
-    <div class="fb-q-label">Q1: What did you like most?</div>
-    <div id="fb-q1"></div>
-    <div class="fb-q-label">Q2: Most challenging or confusing?</div>
-    <div id="fb-q2"></div>
-    <div class="fb-q-label">Q3: Feature suggestions</div>
-    <div id="fb-q3"></div>
-    <div class="fb-q-label">Q4: Other comments</div>
-    <div id="fb-q4"></div>
+  <!-- QUALITATIVE FEEDBACK ACCORDIONS -->
+  <div class="feedback-section-accordions" style="margin-bottom: 24px;">
+    <!-- Accordion Q1 -->
+    <div class="accordion-item">
+      <button class="accordion-header" onclick="toggleAccordion(this)">
+        <span>Q1: What did you like most?</span>
+        <span class="chevron">▼</span>
+      </button>
+      <div class="accordion-content">
+        <div class="accordion-content-inner">
+          <div id="fb-q1"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Accordion Q2 -->
+    <div class="accordion-item">
+      <button class="accordion-header" onclick="toggleAccordion(this)">
+        <span>Q2: Most challenging or confusing?</span>
+        <span class="chevron">▼</span>
+      </button>
+      <div class="accordion-content">
+        <div class="accordion-content-inner">
+          <div id="fb-q2"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Accordion Q3 -->
+    <div class="accordion-item">
+      <button class="accordion-header" onclick="toggleAccordion(this)">
+        <span>Q3: Feature suggestions</span>
+        <span class="chevron">▼</span>
+      </button>
+      <div class="accordion-content">
+        <div class="accordion-content-inner">
+          <div id="fb-q3"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Accordion Q4 -->
+    <div class="accordion-item">
+      <button class="accordion-header" onclick="toggleAccordion(this)">
+        <span>Q4: Other comments</span>
+        <span class="chevron">▼</span>
+      </button>
+      <div class="accordion-content">
+        <div class="accordion-content-inner">
+          <div id="fb-q4"></div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
